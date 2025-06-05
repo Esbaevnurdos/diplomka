@@ -90,42 +90,31 @@ const addUser = async (
   role
 ) => {
   const client = await db.connect();
+
   try {
-    console.log("Starting transaction to add user:", {
+    console.log("Starting single insert into users:", {
       fullName,
       email,
       phone,
     });
 
-    await client.query("BEGIN");
-
-    const staffInsertQuery = `
-      INSERT INTO staff (full_name, password, email, phone, address, branch, status, role)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id;
-    `;
-
-    console.log("Inserting into staff...");
-    const staffResult = await client.query(staffInsertQuery, [
-      fullName,
-      password,
-      email,
-      phone,
-      address,
-      branch,
-      status,
-      role,
-    ]);
-    console.log("Staff insert result:", staffResult.rows[0]);
-
-    const usersInsertQuery = `
-      INSERT INTO users (full_name, email, phone, password, address, branch, status, role, is_verified)
+    const insertQuery = `
+      INSERT INTO users (
+        full_name,
+        email,
+        phone,
+        password,
+        address,
+        branch,
+        status,
+        role,
+        is_verified
+      )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
       RETURNING id, full_name, email, phone;
     `;
 
-    console.log("Inserting into users...");
-    const userResult = await client.query(usersInsertQuery, [
+    const result = await client.query(insertQuery, [
       fullName,
       email,
       phone,
@@ -135,16 +124,12 @@ const addUser = async (
       status,
       role,
     ]);
-    console.log("User insert result:", userResult.rows[0]);
 
-    await client.query("COMMIT");
-    console.log("Transaction committed");
-
-    return userResult.rows[0];
+    console.log("User insert result:", result.rows[0]);
+    return result.rows[0];
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Error in addUser transaction:", error);
-    throw new Error("Database transaction failed");
+    console.error("Error inserting user:", error);
+    throw new Error("Failed to insert user into users table");
   } finally {
     client.release();
     console.log("Client released");
