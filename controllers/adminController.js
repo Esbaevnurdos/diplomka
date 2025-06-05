@@ -24,7 +24,7 @@ const addUserController = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const newUser = await db.addUser(
+    const newUser = await db.createUser(
       fullName,
       password,
       email,
