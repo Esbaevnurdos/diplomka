@@ -1,5 +1,6 @@
 const db = require("./db");
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
 
 const findUserByEmail = async (email) => {
   return await db.query("SELECT * FROM users WHERE email = $1", [email]);
