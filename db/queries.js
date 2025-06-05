@@ -89,32 +89,24 @@ const addUser = async (
   status,
   role
 ) => {
-  const client = await db.connect();
-
-  try {
-    console.log("Starting single insert into users:", {
-      fullName,
+  const insertQuery = `
+    INSERT INTO users (
+      full_name,
       email,
       phone,
-    });
+      password,
+      address,
+      branch,
+      status,
+      role,
+      is_verified
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+    RETURNING id, full_name, email, phone;
+  `;
 
-    const insertQuery = `
-      INSERT INTO users (
-        full_name,
-        email,
-        phone,
-        password,
-        address,
-        branch,
-        status,
-        role,
-        is_verified
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
-      RETURNING id, full_name, email, phone;
-    `;
-
-    const result = await client.query(insertQuery, [
+  try {
+    const result = await db.query(insertQuery, [
       fullName,
       email,
       phone,
@@ -124,15 +116,10 @@ const addUser = async (
       status,
       role,
     ]);
-
-    console.log("User insert result:", result.rows[0]);
     return result.rows[0];
   } catch (error) {
     console.error("Error inserting user:", error);
     throw new Error("Failed to insert user into users table");
-  } finally {
-    client.release();
-    console.log("Client released");
   }
 };
 
