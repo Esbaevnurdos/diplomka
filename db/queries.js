@@ -79,7 +79,6 @@ const bookAppointment = async (patientId, doctorId, date, time, reason) => {
   }
 };
 
-// Staff
 const addUser = async (
   fullName,
   password,
@@ -90,28 +89,54 @@ const addUser = async (
   status,
   role
 ) => {
-  const query = `
-    INSERT INTO staff (full_name, password, email, phone, address, branch, status, role)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING id, full_name, email, phone, role, status;
-  `;
-  const values = [
-    fullName,
-    password,
-    email,
-    phone,
-    address,
-    branch,
-    status,
-    role,
-  ];
+  const client = await db.connect();
 
   try {
-    const result = await db.query(query, values);
-    return result.rows[0];
+    await client.query("BEGIN");
+
+    // Insert into staff table
+    const staffInsertQuery = `
+      INSERT INTO staff (full_name, password, email, phone, address, branch, status, role)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id;
+    `;
+    const staffResult = await client.query(staffInsertQuery, [
+      fullName,
+      password,
+      email,
+      phone,
+      address,
+      branch,
+      status,
+      role,
+    ]);
+    const staffId = staffResult.rows[0].id;
+
+    // Insert into users table
+    const usersInsertQuery = `
+      INSERT INTO users (full_name, email, phone, password, address, branch, status, role, is_verified)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+      RETURNING id, full_name, email, phone;
+    `;
+    const userResult = await client.query(usersInsertQuery, [
+      fullName,
+      email,
+      phone,
+      password,
+      address,
+      branch,
+      status,
+      role,
+    ]);
+
+    await client.query("COMMIT");
+    return userResult.rows[0];
   } catch (error) {
-    console.error("Error in addUser query:", error.message);
-    throw new Error("Database error");
+    await client.query("ROLLBACK");
+    console.error("Error in addUser transaction:", error.message);
+    throw new Error("Database transaction failed");
+  } finally {
+    client.release();
   }
 };
 

@@ -274,7 +274,13 @@ const deletePermission = async (req, res) => {
 const addBranch = async (req, res) => {
   const { name, address, email, phoneNumber, status } = req.body;
   try {
-    const branch = await db.addBranch(name, address, email, phoneNumber, status);
+    const branch = await db.addBranch(
+      name,
+      address,
+      email,
+      phoneNumber,
+      status
+    );
     res.status(201).json([branch]);
   } catch (error) {
     console.error("Error adding branch:", error.message);
@@ -310,7 +316,14 @@ const updateBranch = async (req, res) => {
   const { id } = req.params;
   const { name, address, email, phoneNumber, status } = req.body;
   try {
-    const updatedBranch = await db.updateBranch(id, name, address, email, phoneNumber, status);
+    const updatedBranch = await db.updateBranch(
+      id,
+      name,
+      address,
+      email,
+      phoneNumber,
+      status
+    );
     res.status(200).json([updatedBranch]);
   } catch (error) {
     console.error("Error updating branch:", error.message);
@@ -325,15 +338,14 @@ const deleteBranch = async (req, res) => {
     if (!deletedBranch) {
       return res.status(404).json([{ error: "Branch not found" }]);
     }
-    res.status(200).json([{ message: "Branch deleted successfully", ...deletedBranch }]);
+    res
+      .status(200)
+      .json([{ message: "Branch deleted successfully", ...deletedBranch }]);
   } catch (error) {
     console.error("Error deleting branch:", error.message);
     res.status(500).json([{ error: "Failed to delete branch" }]);
   }
 };
-
-
-
 
 const addSpecialist = async (req, res) => {
   const {
@@ -414,7 +426,6 @@ const getAllSpecialists = async (req, res) => {
     res.status(500).json([{ error: "Failed to fetch specialists" }]);
   }
 };
-
 
 const addPatient = async (req, res) => {
   const {
@@ -834,7 +845,6 @@ const addExpenseCategory = async (req, res) => {
   }
 };
 
-
 const getExpenseCategories = async (_req, res) => {
   try {
     const categories = await db.getExpenseCategories();
@@ -890,7 +900,6 @@ const deleteExpenseCategory = async (req, res) => {
     res.status(500).json([{ error: "Failed to delete category" }]);
   }
 };
-
 
 // GET /organization
 const getOrganizationSettings = async (req, res) => {
