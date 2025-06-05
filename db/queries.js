@@ -89,28 +89,31 @@ const addUser = async (
   status,
   role
 ) => {
-  const insertQuery = `
-    INSERT INTO users (
-      full_name,
-      email,
-      phone,
-      password,
-      address,
-      branch,
-      status,
-      role,
-      is_verified
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
-    RETURNING id, full_name, email, phone;
-  `;
-
   try {
+    // Hash the password before storing
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const insertQuery = `
+      INSERT INTO users (
+        full_name,
+        email,
+        phone,
+        password,
+        address,
+        branch,
+        status,
+        role,
+        is_verified
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+      RETURNING id, full_name, email, phone;
+    `;
+
     const result = await db.query(insertQuery, [
       fullName,
       email,
       phone,
-      password,
+      hashedPassword, // use hashed password here
       address,
       branch,
       status,
