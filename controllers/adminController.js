@@ -539,6 +539,7 @@ const addAppointment = async (req, res) => {
     appointmentDateTime,
     comment,
     status = "Ожидает",
+    paymentType, // New field
   } = req.body;
 
   try {
@@ -548,7 +549,8 @@ const addAppointment = async (req, res) => {
       service,
       appointmentDateTime,
       comment,
-      status
+      status,
+      paymentType // Pass it to DB function
     );
     res.status(201).json({ success: true, data: appointment });
   } catch (error) {
@@ -848,10 +850,13 @@ const addExpenseCategory = async (req, res) => {
 const getExpenseCategories = async (_req, res) => {
   try {
     const categories = await db.getExpenseCategories();
-    res.status(200).json(categories); // Already an array
+    res.status(200).json({ success: true, data: categories });
   } catch (error) {
     console.error("Error getting expense categories:", error.message);
-    res.status(500).json([{ error: "Failed to fetch categories" }]);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch categories",
+    });
   }
 };
 

@@ -637,11 +637,19 @@ const addAppointment = async (
   service,
   appointmentDateTime,
   comment,
-  status
+  status,
+  paymentType
 ) => {
   const query = `
-    INSERT INTO appointments (patient_id, specialist_id, service, appointment_date_time, comment, status)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO appointments (
+      patient_id,
+      specialist_id,
+      service,
+      appointment_date_time,
+      comment,
+      status,
+      payment_type
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *;
   `;
   try {
@@ -652,6 +660,7 @@ const addAppointment = async (
       appointmentDateTime,
       comment,
       status,
+      paymentType,
     ]);
     return result.rows[0];
   } catch (error) {
