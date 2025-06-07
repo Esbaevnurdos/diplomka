@@ -139,7 +139,20 @@ const deleteUser = async (id) => {
 };
 
 const getAllUsers = async () => {
-  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users`;
+  const query = `
+    SELECT 
+      u.id,
+      u.full_name,
+      u.email,
+      u.phone,
+      u.address,
+      b.name AS branch_name,
+      u.status,
+      r.name AS role_name
+    FROM users u
+    LEFT JOIN branches b ON u.branch = b.id
+    LEFT JOIN roles r ON u.role = r.id;
+  `;
   try {
     const result = await db.query(query);
     return result.rows;
