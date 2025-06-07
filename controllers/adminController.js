@@ -181,17 +181,17 @@ const updateRoleController = async (req, res) => {
 };
 
 const deleteRoleController = async (req, res) => {
-  let { names } = req.body; // expecting names as string or array
+  let { ids } = req.body; // expecting one or more role IDs
 
-  if (!names) {
-    return res.status(400).json({ error: "No role names provided" });
+  if (!ids) {
+    return res.status(400).json({ error: "No role IDs provided" });
   }
-  if (!Array.isArray(names)) {
-    names = [names];
+  if (!Array.isArray(ids)) {
+    ids = [ids];
   }
 
   try {
-    const deletedCount = await db.deleteRolesByNames(names);
+    const deletedCount = await db.deleteRolesByIds(ids);
     res.json({
       success: true,
       message: `${deletedCount} role(s) deleted successfully`,
@@ -302,18 +302,18 @@ const updatePermission = async (req, res) => {
 };
 
 const deletePermission = async (req, res) => {
-  let { names } = req.body;
+  let { ids } = req.body;
 
-  if (!names) {
-    return res.status(400).json({ error: "No permission names provided" });
+  if (!ids) {
+    return res.status(400).json({ error: "No permission IDs provided" });
   }
 
-  if (!Array.isArray(names)) {
-    names = [names];
+  if (!Array.isArray(ids)) {
+    ids = [ids];
   }
 
   try {
-    const deletedCount = await db.deletePermissions(names);
+    const deletedCount = await db.deletePermissions(ids);
     res.status(200).json({
       success: true,
       message: `${deletedCount} permission(s) deleted successfully`,

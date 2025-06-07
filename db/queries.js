@@ -296,13 +296,14 @@ const getRoleById = async (name) => {
   }
 };
 
-const deleteRole = async (names) => {
+const deleteRole = async (ids) => {
   const query = `
     DELETE FROM roles
-    WHERE name = ANY($1::text[]);
+    WHERE id = ANY($1::int[])
+    RETURNING *;
   `;
   try {
-    const result = await db.query(query, [names]);
+    const result = await db.query(query, [ids]);
     return result.rowCount;
   } catch (error) {
     console.error("Error deleting roles:", error.message);
@@ -368,21 +369,18 @@ const updatePermission = async (name, newName, description, code) => {
   }
 };
 
-const deletePermission = async (names) => {
-  // Ensure names is an array
-  if (!Array.isArray(names)) {
-    names = [names];
+const deletePermission = async (ids) => {
+  if (!Array.isArray(ids)) {
+    ids = [ids];
   }
 
-  // Create placeholders like $1, $2, ..., depending on number of names
-  const placeholders = names.map((_, idx) => `$${idx + 1}`).join(", ");
-
-  const query = `DELETE FROM permissions WHERE name IN (${placeholders});`;
+  const placeholders = ids.map((_, idx) => `$${idx + 1}`).join(", ");
+  const query = `DELETE FROM permissions WHERE id IN (${placeholders}) RETURNING *;`;
 
   try {
-    const result = await db.query(query, names);
+    const result = await db.query(query, ids);
     console.log(`Deleted ${result.rowCount} permission(s) successfully`);
-    return result.rowCount; // how many deleted
+    return result.rowCount;
   } catch (error) {
     console.error("Error deleting permissions:", error.message);
     throw error;
