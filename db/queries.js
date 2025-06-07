@@ -609,7 +609,7 @@ const getAllPatients = async () => {
       p.comment,
       p.created_at,
       p.updated_at,
-      s.title AS service,
+      s.name AS service,
       sp.name AS specialist
     FROM patients p
     LEFT JOIN services s ON p.service = s.id
