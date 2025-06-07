@@ -261,7 +261,14 @@ const createRole = async (roleName, accessLevel = "basic") => {
 };
 
 const getAllRoles = async () => {
-  const query = `SELECT * FROM roles;`;
+  const query = `
+    SELECT 
+      r.id,
+      r.name AS role_name,
+      p.name AS access_level_name
+    FROM roles r
+    LEFT JOIN permissions p ON r.access_level = p.id;
+  `;
   try {
     const result = await db.query(query);
     return result.rows;
