@@ -264,7 +264,7 @@ const getAllRoles = async () => {
   const query = `
     SELECT 
       r.id,
-      r.name AS role_name,
+      r.role_name AS role_name,
       p.name AS access_level_name
     FROM roles r
     LEFT JOIN permissions p ON r.access_level = p.id;
