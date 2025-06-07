@@ -234,9 +234,9 @@ const updateDoctorStatus = async (id, status) => {
   }
 };
 
-const createRole = async (roleName, accessLevel = "basic") => {
+const createRole = async (roleName, permission = "basic") => {
   // Check for existing role first
-  const checkQuery = `SELECT * FROM roles WHERE role_name = $1;`;
+  const checkQuery = `SELECT * FROM roles WHERE name = $1;`;
   const existing = await db.query(checkQuery, [roleName]);
 
   if (existing.rows.length > 0) {
@@ -244,12 +244,12 @@ const createRole = async (roleName, accessLevel = "basic") => {
   }
 
   const insertQuery = `
-    INSERT INTO roles (role_name, access_level)
+    INSERT INTO roles (name, permission)
     VALUES ($1, $2)
     RETURNING *;
   `;
   try {
-    const result = await db.query(insertQuery, [roleName, accessLevel]);
+    const result = await db.query(insertQuery, [roleName, permission]);
     return result.rows[0];
   } catch (error) {
     console.error("Error creating role:", error.message);
@@ -261,9 +261,8 @@ const getAllRoles = async () => {
   const query = `
     SELECT 
       r.id,
-      r.role_name,
-      p.name AS access_level,
-      p.code AS access_code
+      r.name,
+      p.name AS permission
     FROM roles r
     LEFT JOIN permissions p ON r.access_level = p.id::text;
   `;
@@ -276,25 +275,27 @@ const getAllRoles = async () => {
   }
 };
 
-const updateRole = async (id, roleName, accessLevel) => {
+const updateRole = async (oldName, newName, permission) => {
   const query = `
-    UPDATE roles SET role_name = $1, access_level = $2
-    WHERE id = $3
+    UPDATE roles 
+    SET name = $1, permission = $2
+    WHERE name = $3
     RETURNING *;
   `;
+
   try {
-    const result = await db.query(query, [roleName, accessLevel, id]);
-    return result.rows[0];
+    const result = await db.query(query, [newName, permission, oldName]);
+    return result.rows[0]; // undefined if no role updated
   } catch (error) {
     console.error("Error updating role:", error.message);
     throw error;
   }
 };
 
-const getRoleById = async (id) => {
-  const query = `SELECT * FROM roles WHERE id = $1;`;
+const getRoleById = async (name) => {
+  const query = `SELECT * FROM roles WHERE name = $1;`;
   try {
-    const result = await db.query(query, [id]);
+    const result = await db.query(query, [name]);
     return result.rows[0];
   } catch (error) {
     console.error("Error fetching role by ID:", error.message);
@@ -302,12 +303,16 @@ const getRoleById = async (id) => {
   }
 };
 
-const deleteRole = async (id) => {
-  const query = `DELETE FROM roles WHERE id = $1;`;
+const deleteRole = async (names) => {
+  const query = `
+    DELETE FROM roles
+    WHERE name = ANY($1::text[]);
+  `;
   try {
-    await db.query(query, [id]);
+    const result = await db.query(query, [names]);
+    return result.rowCount;
   } catch (error) {
-    console.error("Error deleting role:", error.message);
+    console.error("Error deleting roles:", error.message);
     throw error;
   }
 };

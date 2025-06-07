@@ -126,7 +126,7 @@ const updateUserController = async (req, res) => {
 };
 
 const createRoleController = async (req, res) => {
-  const { roleName, accessLevel } = req.body;
+  const { roleName, permission } = req.body; // changed accessLevel to permission
 
   if (!roleName || roleName.length < 2) {
     return res
@@ -135,7 +135,7 @@ const createRoleController = async (req, res) => {
   }
 
   try {
-    const newRole = await db.createRole(roleName, accessLevel);
+    const newRole = await db.createRole(roleName, permission);
     res.status(201).json([newRole]);
   } catch (error) {
     if (error.message === "Role already exists") {
@@ -143,7 +143,7 @@ const createRoleController = async (req, res) => {
     }
 
     console.error("Error creating role:", error.message);
-    return res.status(409).json([{ error: "Role already exists" }]);
+    return res.status(500).json({ error: "Server error during role creation" });
   }
 };
 
@@ -158,10 +158,9 @@ const getRolesController = async (req, res) => {
   }
 };
 
-// Update Role
 const updateRoleController = async (req, res) => {
-  const { id } = req.params;
-  const { roleName, accessLevel } = req.body;
+  const { name } = req.params; // updating by role name
+  const { roleName, permission } = req.body; // use correct fields
 
   if (!roleName || roleName.length < 2) {
     return res
@@ -170,7 +169,10 @@ const updateRoleController = async (req, res) => {
   }
 
   try {
-    const updatedRole = await db.updateRole(id, roleName, accessLevel);
+    const updatedRole = await db.updateRole(name, roleName, permission);
+    if (!updatedRole) {
+      return res.status(404).json({ error: "Role not found" });
+    }
     res.status(200).json([updatedRole]);
   } catch (error) {
     console.error("Error updating role:", error.message);
@@ -179,21 +181,31 @@ const updateRoleController = async (req, res) => {
 };
 
 const deleteRoleController = async (req, res) => {
-  const { id } = req.params;
+  let { names } = req.body; // expecting names as string or array
+
+  if (!names) {
+    return res.status(400).json({ error: "No role names provided" });
+  }
+  if (!Array.isArray(names)) {
+    names = [names];
+  }
 
   try {
-    await db.deleteRole(id);
-    res.json({ success: true, message: "Role deleted successfully" });
+    const deletedCount = await db.deleteRolesByNames(names);
+    res.json({
+      success: true,
+      message: `${deletedCount} role(s) deleted successfully`,
+    });
   } catch (error) {
-    console.error("Error deleting role:", error.message);
-    res.status(200).json([{ message: "Role deleted successfully" }]);
+    console.error("Error deleting roles:", error.message);
+    res.status(500).json({ error: "Server error while deleting roles" });
   }
 };
 
 const getRoleByIdController = async (req, res) => {
-  const { id } = req.params;
+  const { name } = req.params;
   try {
-    const role = await db.getRoleById(id);
+    const role = await db.getRoleById(name);
 
     if (!role) {
       return res.status(404).json({ error: "Role not found" });
