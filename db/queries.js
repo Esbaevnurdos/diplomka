@@ -264,7 +264,7 @@ const getAllRoles = async () => {
       r.name,
       p.name AS permission
     FROM roles r
-    LEFT JOIN permissions p ON r.access_level = p.id::text;
+    LEFT JOIN permissions p ON r.permission = p.id::text;
   `;
   try {
     const result = await db.query(query);
@@ -418,10 +418,10 @@ const addBranch = async (
   }
 };
 
-const getBranchById = async (id) => {
-  const query = `SELECT * FROM branches WHERE id = $1;`;
+const getBranchById = async (name) => {
+  const query = `SELECT * FROM branches WHERE name = $1;`;
   try {
-    const result = await db.query(query, [id]);
+    const result = await db.query(query, [name]);
     if (result.rows.length === 0) {
       throw new Error("Branch not found");
     }

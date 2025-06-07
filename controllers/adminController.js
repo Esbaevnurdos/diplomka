@@ -341,9 +341,9 @@ const addBranch = async (req, res) => {
 };
 
 const getBranchById = async (req, res) => {
-  const { id } = req.params;
+  const { name } = req.params;
   try {
-    const branch = await db.getBranchById(id);
+    const branch = await db.getBranchById(name);
     if (!branch) {
       return res.status(404).json([{ error: "Branch not found" }]);
     }
