@@ -272,8 +272,8 @@ const getPermissionById = async (req, res) => {
 };
 
 const updatePermission = async (req, res) => {
-  const { name } = req.params;
-  const { newName, description, code } = req.body;
+  const { name } = req.params; // текущий name
+  const { newName, description, code } = req.body; // новые значения
 
   try {
     const updatedPermission = await db.updatePermission(
@@ -286,11 +286,13 @@ const updatePermission = async (req, res) => {
     res.status(200).json({ success: true, data: updatedPermission });
   } catch (error) {
     console.error("Error updating permission:", error.message);
+
     if (error.message === "Permission not found") {
       return res
         .status(404)
         .json({ success: false, message: "Permission not found" });
     }
+
     res
       .status(500)
       .json({ success: false, message: "Failed to update permission" });

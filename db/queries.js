@@ -356,14 +356,15 @@ const updatePermission = async (name, newName, description, code) => {
   `;
   try {
     const result = await db.query(query, [newName, description, code, name]);
+
     if (result.rows.length === 0) {
-      // Если не обновлено ни одной записи — выбрось ошибку с понятным сообщением
-      throw new Error("Permission not found");
+      throw new Error("Permission not found"); // <- для 404
     }
+
     return result.rows[0];
   } catch (error) {
     console.error("Error updating permission:", error.message);
-    throw error;
+    throw error; // <- будет перехвачен в контроллере
   }
 };
 
