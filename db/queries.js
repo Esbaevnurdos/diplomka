@@ -336,10 +336,10 @@ const getAllPermissions = async () => {
   }
 };
 
-const getPermissionById = async (id) => {
-  const query = `SELECT * FROM permissions WHERE id = $1;`;
+const getPermissionById = async (name) => {
+  const query = `SELECT * FROM permissions WHERE name = $1;`;
   try {
-    const result = await db.query(query, [id]);
+    const result = await db.query(query, [name]);
     return result.rows[0]; // returns undefined if not found
   } catch (error) {
     console.error("Error fetching permission by ID:", error.message);
@@ -441,22 +441,34 @@ const getAllBranches = async () => {
   }
 };
 
-const updateBranch = async (id, name, address, email, phoneNumber, status) => {
+const updateBranch = async (
+  name,
+  newName,
+  address,
+  email,
+  phoneNumber,
+  status
+) => {
   const query = `
     UPDATE branches 
     SET name = $1, address = $2, email = $3, phone_number = $4, status = $5 
-    WHERE id = $6 
+    WHERE name = $6 
     RETURNING *;
   `;
   try {
     const result = await db.query(query, [
-      name,
+      newName,
       address,
       email,
       phoneNumber,
       status,
-      id,
+      name, // original name to match in WHERE
     ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Branch not found");
+    }
+
     return result.rows[0];
   } catch (error) {
     console.error("Error updating branch:", error.message);
@@ -464,13 +476,17 @@ const updateBranch = async (id, name, address, email, phoneNumber, status) => {
   }
 };
 
-const deleteBranch = async (id) => {
-  const query = `DELETE FROM branches WHERE id = $1 RETURNING *;`;
+const deleteBranch = async (ids) => {
+  if (!Array.isArray(ids)) ids = [ids]; // Ensure it's an array
+
+  const placeholders = ids.map((_, idx) => `$${idx + 1}`).join(", ");
+  const query = `DELETE FROM branches WHERE id IN (${placeholders}) RETURNING *;`;
+
   try {
-    const result = await db.query(query, [id]);
-    return result.rows[0]; // deleted row
+    const result = await db.query(query, ids);
+    return result.rows; // All deleted branches
   } catch (error) {
-    console.error("Error deleting branch:", error.message);
+    console.error("Error deleting branches:", error.message);
     throw error;
   }
 };

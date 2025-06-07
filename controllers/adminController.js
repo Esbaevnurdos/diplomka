@@ -272,8 +272,8 @@ const getPermissionById = async (req, res) => {
 };
 
 const updatePermission = async (req, res) => {
-  const { name } = req.params; // текущий name
-  const { newName, description, code } = req.body; // новые значения
+  const { name } = req.params;
+  const { newName, description, code } = req.body;
 
   try {
     const updatedPermission = await db.updatePermission(
@@ -287,15 +287,17 @@ const updatePermission = async (req, res) => {
   } catch (error) {
     console.error("Error updating permission:", error.message);
 
+    // If permission not found → 404
     if (error.message === "Permission not found") {
       return res
         .status(404)
         .json({ success: false, message: "Permission not found" });
     }
 
+    // Otherwise → 500
     res
       .status(500)
-      .json({ success: false, message: "Failed to update permission" });
+      .json({ success: false, message: "Failed to fetch permission" });
   }
 };
 
@@ -366,12 +368,13 @@ const getAllBranches = async (req, res) => {
 };
 
 const updateBranch = async (req, res) => {
-  const { id } = req.params;
-  const { name, address, email, phoneNumber, status } = req.body;
+  const { name } = req.params; // original branch name in URL
+  const { newName, address, email, phoneNumber, status } = req.body;
+
   try {
     const updatedBranch = await db.updateBranch(
-      id,
       name,
+      newName,
       address,
       email,
       phoneNumber,
@@ -380,23 +383,40 @@ const updateBranch = async (req, res) => {
     res.status(200).json([updatedBranch]);
   } catch (error) {
     console.error("Error updating branch:", error.message);
+
+    if (error.message === "Branch not found") {
+      return res.status(404).json([{ error: "Branch not found" }]);
+    }
+
     res.status(500).json([{ error: "Failed to update branch" }]);
   }
 };
 
 const deleteBranch = async (req, res) => {
-  const { id } = req.params;
+  let { ids } = req.body;
+
+  if (!ids) {
+    return res.status(400).json([{ error: "No branch IDs provided" }]);
+  }
+
+  if (!Array.isArray(ids)) {
+    ids = [ids]; // Wrap in array if only one ID is sent
+  }
+
   try {
-    const deletedBranch = await db.deleteBranch(id);
-    if (!deletedBranch) {
-      return res.status(404).json([{ error: "Branch not found" }]);
+    const deletedBranches = await db.deleteBranches(ids);
+    if (deletedBranches.length === 0) {
+      return res.status(404).json([{ error: "No branches found to delete" }]);
     }
-    res
-      .status(200)
-      .json([{ message: "Branch deleted successfully", ...deletedBranch }]);
+    res.status(200).json([
+      {
+        message: `${deletedBranches.length} branch(es) deleted successfully`,
+        deleted: deletedBranches,
+      },
+    ]);
   } catch (error) {
-    console.error("Error deleting branch:", error.message);
-    res.status(500).json([{ error: "Failed to delete branch" }]);
+    console.error("Error deleting branches:", error.message);
+    res.status(500).json([{ error: "Failed to delete branches" }]);
   }
 };
 
