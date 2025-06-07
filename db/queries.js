@@ -264,8 +264,11 @@ const getAllRoles = async () => {
   const query = `
     SELECT 
       r.id,
-      r.role_name AS role_name,
-      p.name AS access_level_name
+      r.role_name,
+      r.access_level,
+      p.name AS access_level_name,
+      p.description AS access_description,
+      p.code AS access_code
     FROM roles r
     LEFT JOIN permissions p ON r.access_level = p.id;
   `;
@@ -273,7 +276,7 @@ const getAllRoles = async () => {
     const result = await db.query(query);
     return result.rows;
   } catch (error) {
-    console.error("Error fetching roles:", error.message);
+    console.error("Error fetching roles:", error); // Show full error
     throw error;
   }
 };
