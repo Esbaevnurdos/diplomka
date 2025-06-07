@@ -220,6 +220,13 @@ const getRoleByIdController = async (req, res) => {
 
 const addPermission = async (req, res) => {
   const { name, description, code } = req.body;
+
+  if (!name || !code) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Name and code are required" });
+  }
+
   try {
     const permission = await db.addPermission(name, description, code);
     res.status(201).json({ success: true, data: permission });
@@ -245,9 +252,9 @@ const getAllPermissions = async (req, res) => {
 };
 
 const getPermissionById = async (req, res) => {
-  const { id } = req.params;
+  const { name } = req.params;
   try {
-    const permission = await db.getPermissionById(id);
+    const permission = await db.getPermissionByName(name);
 
     if (!permission) {
       return res
@@ -257,7 +264,7 @@ const getPermissionById = async (req, res) => {
 
     res.status(200).json({ success: true, data: permission });
   } catch (error) {
-    console.error("Error fetching permission by ID:", error.message);
+    console.error("Error fetching permission by name:", error.message);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch permission" });
@@ -265,15 +272,23 @@ const getPermissionById = async (req, res) => {
 };
 
 const updatePermission = async (req, res) => {
-  const { id } = req.params;
-  const { name, description, code } = req.body;
+  const { name } = req.params; // original name in URL param
+  const { newName, description, code } = req.body; // new values to update to
+
   try {
     const updatedPermission = await db.updatePermission(
-      id,
       name,
+      newName,
       description,
       code
     );
+
+    if (!updatedPermission) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Permission not found" });
+    }
+
     res.status(200).json({ success: true, data: updatedPermission });
   } catch (error) {
     console.error("Error updating permission:", error.message);
@@ -283,19 +298,28 @@ const updatePermission = async (req, res) => {
   }
 };
 
-// Delete Permission
 const deletePermission = async (req, res) => {
-  const { id } = req.params;
+  let { names } = req.body;
+
+  if (!names) {
+    return res.status(400).json({ error: "No permission names provided" });
+  }
+
+  if (!Array.isArray(names)) {
+    names = [names];
+  }
+
   try {
-    await db.deletePermission(id);
-    res
-      .status(200)
-      .json({ success: true, message: "Permission deleted successfully" });
+    const deletedCount = await db.deletePermissions(names);
+    res.status(200).json({
+      success: true,
+      message: `${deletedCount} permission(s) deleted successfully`,
+    });
   } catch (error) {
-    console.error("Error deleting permission:", error.message);
+    console.error("Error deleting permissions:", error.message);
     res
       .status(500)
-      .json({ success: false, message: "Failed to delete permission" });
+      .json({ success: false, message: "Failed to delete permissions" });
   }
 };
 

@@ -354,15 +354,15 @@ const getPermissionById = async (id) => {
   }
 };
 
-const updatePermission = async (id, name, description, code) => {
+const updatePermission = async (name, newName, description, code) => {
   const query = `
     UPDATE permissions 
     SET name = $1, description = $2, code = $3 
-    WHERE id = $4 
+    WHERE name = $4 
     RETURNING *;
   `;
   try {
-    const result = await db.query(query, [name, description, code, id]);
+    const result = await db.query(query, [newName, description, code, name]);
     return result.rows[0];
   } catch (error) {
     console.error("Error updating permission:", error.message);
@@ -370,13 +370,23 @@ const updatePermission = async (id, name, description, code) => {
   }
 };
 
-const deletePermission = async (id) => {
-  const query = `DELETE FROM permissions WHERE id = $1;`;
+const deletePermission = async (names) => {
+  // Ensure names is an array
+  if (!Array.isArray(names)) {
+    names = [names];
+  }
+
+  // Create placeholders like $1, $2, ..., depending on number of names
+  const placeholders = names.map((_, idx) => `$${idx + 1}`).join(", ");
+
+  const query = `DELETE FROM permissions WHERE name IN (${placeholders});`;
+
   try {
-    await db.query(query, [id]);
-    console.log("Permission deleted successfully");
+    const result = await db.query(query, names);
+    console.log(`Deleted ${result.rowCount} permission(s) successfully`);
+    return result.rowCount; // how many deleted
   } catch (error) {
-    console.error("Error deleting permission:", error.message);
+    console.error("Error deleting permissions:", error.message);
     throw error;
   }
 };
