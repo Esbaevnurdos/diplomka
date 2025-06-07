@@ -127,15 +127,17 @@ const addUser = async (
   }
 };
 
-const deleteUser = async (fullNames) => {
-  const placeholders = fullNames.map((_, idx) => `$${idx + 1}`).join(", ");
-  const query = `DELETE FROM users WHERE full_name IN (${placeholders});`;
-
+const deleteUser = async (ids) => {
+  const query = `
+    DELETE FROM users
+    WHERE id = ANY($1::int[])
+    RETURNING *;
+  `;
   try {
-    const result = await db.query(query, fullNames);
-    return result.rowCount; // number of deleted rows
+    const result = await db.query(query, [ids]);
+    return result.rowCount;
   } catch (error) {
-    console.error("Error deleting users by full_name:", error.message);
+    console.error("Error deleting users:", error.message);
     throw error;
   }
 };
