@@ -127,13 +127,15 @@ const addUser = async (
   }
 };
 
-const deleteUser = async (id) => {
-  const query = `DELETE FROM users WHERE id = $1;`;
+const deleteUser = async (fullNames) => {
+  const placeholders = fullNames.map((_, idx) => `$${idx + 1}`).join(", ");
+  const query = `DELETE FROM users WHERE full_name IN (${placeholders});`;
+
   try {
-    await db.query(query, [id]);
-    console.log("User deleted successfully");
+    const result = await db.query(query, fullNames);
+    return result.rowCount; // number of deleted rows
   } catch (error) {
-    console.error("Error deleting user:", error.message);
+    console.error("Error deleting users by full_name:", error.message);
     throw error;
   }
 };
@@ -141,17 +143,15 @@ const deleteUser = async (id) => {
 const getAllUsers = async () => {
   const query = `
     SELECT 
-      u.id,
-      u.full_name,
-      u.email,
-      u.phone,
-      u.address,
-      b.name AS branch,
-      u.status,
-      r.role_name AS role
-    FROM users u
-    LEFT JOIN branches b ON u.branch = b.id
-    LEFT JOIN roles r ON u.role = r.id;
+      id,
+      full_name,
+      email,
+      phone,
+      address,
+      branch,
+      status,
+      role
+    FROM users;
   `;
   try {
     const result = await db.query(query);
@@ -162,19 +162,18 @@ const getAllUsers = async () => {
   }
 };
 
-const getUserById = async (id) => {
-  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users WHERE id = $1`;
+const getUserById = async (fullName) => {
+  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users WHERE full_name = $1`;
   try {
-    const result = await db.query(query, [id]);
+    const result = await db.query(query, [fullName]);
     return result.rows[0];
   } catch (error) {
-    console.error("Error fetching user by ID:", error.message);
+    console.error("Error fetching user by full_name:", error.message);
     throw error;
   }
 };
 
 const updateUser = async (
-  id,
   fullName,
   email,
   phone,
@@ -185,27 +184,25 @@ const updateUser = async (
 ) => {
   const query = `
     UPDATE users
-    SET full_name = $2,
-        email = $3,
-        phone_number = $4,
-        address = $5,
-        branch = $6,
-        status = $7,
-        role = $8
-    WHERE id = $1
-    RETURNING id, fullname, email, phone, address, branch, status, role;
+    SET email = $2,
+        phone = $3,
+        address = $4,
+        branch = $5,
+        status = $6,
+        role = $7
+    WHERE full_name = $1
+    RETURNING id, full_name, email, phone, address, branch, status, role;
   `;
-  const values = [id, fullName, email, phone, address, branch, status, role];
+  const values = [fullName, email, phone, address, branch, status, role];
 
   try {
     const result = await db.query(query, values);
     return result.rows[0];
   } catch (error) {
-    console.error("Error updating user:", error.message);
+    console.error("Error updating user by full_name:", error.message);
     throw error;
   }
 };
-
 const getAvailableDoctors = async () => {
   const query = `
     SELECT id, full_name, phone, branch, status 
@@ -870,7 +867,7 @@ const getAllReportAppointments = async () => {
       a.id,
       a.appointment_date_time,
       p.name AS patient,
-      s.name AS specialist,
+      s.name AS specialist_name,
       a.total_revenue,     -- adjust column name if different
       a.transactions_count -- adjust column name if different
     FROM appointments a

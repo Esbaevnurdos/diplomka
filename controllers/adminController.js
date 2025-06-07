@@ -47,16 +47,29 @@ const addUserController = async (req, res) => {
 };
 
 const deleteUserController = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    await db.deleteUser(id);
-    res
-      .status(200)
-      .json([{ success: true, message: "User deleted successfully" }]);
+    let { fullNames } = req.body;
+
+    // Normalize input: allow both string and array
+    if (typeof fullNames === "string") {
+      fullNames = [fullNames];
+    }
+
+    if (!Array.isArray(fullNames) || fullNames.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "fullNames must be a non-empty string or array" });
+    }
+
+    const deletedCount = await db.deleteUsersByFullName(fullNames);
+
+    res.status(200).json({
+      success: true,
+      message: `${deletedCount} user(s) deleted successfully`,
+    });
   } catch (error) {
-    console.error("Error deleting user:", error.message);
-    res.status(500).json([{ error: "Server error during user deletion" }]);
+    console.error("Error deleting users:", error.message);
+    res.status(500).json({ error: "Server error during user deletion" });
   }
 };
 
@@ -71,9 +84,9 @@ const getAllUsersController = async (req, res) => {
 };
 
 const getUserByIdController = async (req, res) => {
-  const { id } = req.params;
+  const { fullName } = req.params;
   try {
-    const user = await db.getUserById(id);
+    const user = await db.getUserByName(fullName);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -81,18 +94,17 @@ const getUserByIdController = async (req, res) => {
 
     res.status(200).json([user]);
   } catch (error) {
-    console.error("Error fetching user by ID:", error.message);
+    console.error("Error fetching user by fullName:", error.message);
     res.status(500).json({ error: "Server error while fetching user" });
   }
 };
 
 const updateUserController = async (req, res) => {
-  const { id } = req.params;
-  const { fullName, email, phone, address, branch, status, role } = req.body;
+  const { fullName } = req.params;
+  const { email, phone, address, branch, status, role } = req.body;
 
   try {
-    const updatedUser = await db.updateUser(
-      id,
+    const updatedUser = await db.updateUserByName(
       fullName,
       email,
       phone,
@@ -101,6 +113,10 @@ const updateUserController = async (req, res) => {
       status,
       role
     );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     res.status(200).json([updatedUser]);
   } catch (error) {
