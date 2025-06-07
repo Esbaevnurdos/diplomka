@@ -679,8 +679,8 @@ const deletePatient = async (id) => {
 };
 
 const addAppointment = async (
-  patientId,
-  specialistId,
+  patient,
+  specialist,
   service,
   appointmentDateTime,
   comment,
@@ -689,8 +689,8 @@ const addAppointment = async (
 ) => {
   const query = `
     INSERT INTO appointments (
-      patient_id,
-      specialist_id,
+      patient,
+      specialist,
       service,
       appointment_date_time,
       comment,
@@ -701,8 +701,8 @@ const addAppointment = async (
   `;
   try {
     const result = await db.query(query, [
-      patientId,
-      specialistId,
+      patient,
+      specialist,
       service,
       appointmentDateTime,
       comment,

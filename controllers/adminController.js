@@ -533,8 +533,8 @@ const deletePatient = async (req, res) => {
 
 const addAppointment = async (req, res) => {
   const {
-    patientId,
-    specialistId,
+    patient,
+    specialist,
     service,
     appointmentDateTime,
     comment,
@@ -544,8 +544,8 @@ const addAppointment = async (req, res) => {
 
   try {
     const appointment = await db.addAppointment(
-      patientId,
-      specialistId,
+      patient,
+      specialist,
       service,
       appointmentDateTime,
       comment,
