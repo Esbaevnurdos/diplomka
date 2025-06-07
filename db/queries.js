@@ -270,13 +270,13 @@ const getAllRoles = async () => {
       p.description AS access_description,
       p.code AS access_code
     FROM roles r
-    LEFT JOIN permissions p ON r.access_level = p.id;
+    LEFT JOIN permissions p ON r.access_level = p.id::text;
   `;
   try {
     const result = await db.query(query);
     return result.rows;
   } catch (error) {
-    console.error("Error fetching roles:", error); // Show full error
+    console.error("🔥 Full error while fetching roles:", error);
     throw error;
   }
 };
