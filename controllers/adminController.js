@@ -694,10 +694,10 @@ const getAppointmentsReportByPeriod = async (req, res) => {
 };
 
 const addService = async (req, res) => {
-  const { title, description, price, isAvailable = true } = req.body;
+  const { name, description, price, isAvailable = true } = req.body;
 
   try {
-    const service = await db.addService(title, description, price, isAvailable);
+    const service = await db.addService(name, description, price, isAvailable);
     res.status(201).json({ success: true, data: service });
   } catch (error) {
     console.error("Error adding service:", error.message);

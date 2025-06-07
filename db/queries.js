@@ -864,7 +864,7 @@ const getAllReportAppointments = async () => {
 
 const addService = async (name, description, price, isAvailable) => {
   const query = `
-    INSERT INTO services (title, description, price, is_available)
+    INSERT INTO services (name, description, price, is_available)
     VALUES ($1, $2, $3, $4) RETURNING *;
   `;
   const values = [name, description, price, isAvailable];
@@ -875,7 +875,7 @@ const addService = async (name, description, price, isAvailable) => {
 const updateService = async (id, name, description, price, isAvailable) => {
   const query = `
     UPDATE services
-    SET title = $1, description = $2, price = $3, is_available = $4
+    SET name = $1, description = $2, price = $3, is_available = $4
     WHERE id = $5 RETURNING *;
   `;
   const values = [name, description, price, isAvailable, id];
