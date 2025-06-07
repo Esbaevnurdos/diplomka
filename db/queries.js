@@ -148,7 +148,7 @@ const getAllUsers = async () => {
       u.address,
       b.name AS branch_name,
       u.status,
-      r.name AS role_name
+      r.role_name AS role_name
     FROM users u
     LEFT JOIN branches b ON u.branch = b.id
     LEFT JOIN roles r ON u.role = r.id;
