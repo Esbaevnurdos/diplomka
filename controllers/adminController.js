@@ -254,7 +254,7 @@ const getAllPermissions = async (req, res) => {
 const getPermissionById = async (req, res) => {
   const { name } = req.params;
   try {
-    const permission = await db.getPermissionByName(name);
+    const permission = await db.getPermissionById(name);
 
     if (!permission) {
       return res
