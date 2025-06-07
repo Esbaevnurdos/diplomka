@@ -146,9 +146,9 @@ const getAllUsers = async () => {
       u.email,
       u.phone,
       u.address,
-      b.name AS branch_name,
+      b.name AS branch,
       u.status,
-      r.role_name AS role_name
+      r.role_name AS role
     FROM users u
     LEFT JOIN branches b ON u.branch = b.id
     LEFT JOIN roles r ON u.role = r.id;
@@ -265,7 +265,7 @@ const getAllRoles = async () => {
     SELECT 
       r.id,
       r.role_name,
-      p.name AS access_level_name,
+      p.name AS access_level,
       p.code AS access_code
     FROM roles r
     LEFT JOIN permissions p ON r.access_level = p.id::text;
@@ -495,12 +495,23 @@ const addSpecialist = async (
 };
 
 const getAllSpecialists = async () => {
-  const query = `SELECT * FROM specialists;`;
+  const query = `
+    SELECT 
+      s.id,
+      s.name,
+      s.phone_number,
+      s.iin,
+      b.name AS branch,
+      s.status,
+      s.specialist_type
+    FROM specialists s
+    LEFT JOIN branches b ON s.branch::int = b.id;
+  `;
   try {
     const result = await db.query(query);
     return result.rows;
   } catch (error) {
-    console.error("Error fetching specialists:", error.message);
+    console.error("Error fetching specialists:", error);
     throw error;
   }
 };
