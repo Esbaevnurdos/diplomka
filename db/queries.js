@@ -770,8 +770,8 @@ const getAppointmentsReportByPeriod = async (period) => {
 const getAppointmentsReportByDateRange = async (start_date, end_date) => {
   const query = `
     SELECT
-      patient_id,
-      specialist_id,
+      patient,
+      specialist,
       service,
       appointment_date_time,
       status
@@ -786,8 +786,8 @@ const getAppointmentsReportByDateRange = async (start_date, end_date) => {
 const getAllAppointments = async () => {
   const query = `
     SELECT a.*, 
-           p.name AS patient_name,
-           s.name AS specialist_name
+           p.name AS patient,
+           s.name AS specialist
     FROM appointments a
     LEFT JOIN patients p ON a.patient_id = p.id
     LEFT JOIN specialists s ON a.specialist_id = s.id
@@ -805,8 +805,8 @@ const getAllAppointments = async () => {
 const getAppointmentById = async (id) => {
   const query = `
     SELECT a.*, 
-           p.name AS patient_name,
-           s.name AS specialist_name
+           p.name AS patient,
+           s.name AS specialist
     FROM appointments a
     LEFT JOIN patients p ON a.patient_id = p.id
     LEFT JOIN specialists s ON a.specialist_id = s.id
@@ -833,7 +833,7 @@ const updateAppointment = async (
 ) => {
   const query = `
     UPDATE appointments 
-    SET patient_id = $1, specialist_id = $2, service = $3, appointment_date_time = $4, comment = $5, status = $6
+    SET patient = $1, specialist = $2, service = $3, appointment_date_time = $4, comment = $5, status = $6
     WHERE id = $7
     RETURNING *;
   `;
@@ -869,8 +869,8 @@ const getAllReportAppointments = async () => {
     SELECT 
       a.id,
       a.appointment_date_time,
-      p.name AS patient_name,
-      s.name AS specialist_name,
+      p.name AS patient,
+      s.name AS specialist,
       a.total_revenue,     -- adjust column name if different
       a.transactions_count -- adjust column name if different
     FROM appointments a

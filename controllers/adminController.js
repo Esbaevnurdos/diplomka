@@ -575,20 +575,14 @@ const getAllAppointments = async (req, res) => {
 
 const updateAppointment = async (req, res) => {
   const { id } = req.params;
-  const {
-    patientId,
-    specialistId,
-    service,
-    appointmentDateTime,
-    comment,
-    status,
-  } = req.body;
+  const { patient, specialist, service, appointmentDateTime, comment, status } =
+    req.body;
 
   try {
     const updated = await db.updateAppointment(
       id,
-      patientId,
-      specialistId,
+      patient,
+      specialist,
       service,
       appointmentDateTime,
       comment,
