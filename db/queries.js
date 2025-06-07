@@ -258,14 +258,7 @@ const createRole = async (roleName, permission = "basic") => {
 };
 
 const getAllRoles = async () => {
-  const query = `
-    SELECT 
-      r.id,
-      r.name,
-      p.name AS permission
-    FROM roles r
-    LEFT JOIN permissions p ON r.permission = p.id::text;
-  `;
+  const query = `SELECT * FROM roles;`;
   try {
     const result = await db.query(query);
     return result.rows;
