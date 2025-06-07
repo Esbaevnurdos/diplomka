@@ -128,7 +128,7 @@ const addUser = async (
 };
 
 const deleteUser = async (id) => {
-  const query = `DELETE FROM staff WHERE id = $1;`;
+  const query = `DELETE FROM users WHERE id = $1;`;
   try {
     await db.query(query, [id]);
     console.log("User deleted successfully");
@@ -139,7 +139,7 @@ const deleteUser = async (id) => {
 };
 
 const getAllUsers = async () => {
-  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM staff`;
+  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users`;
   try {
     const result = await db.query(query);
     return result.rows;
@@ -150,7 +150,7 @@ const getAllUsers = async () => {
 };
 
 const getUserById = async (id) => {
-  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM staff WHERE id = $1`;
+  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users WHERE id = $1`;
   try {
     const result = await db.query(query, [id]);
     return result.rows[0];
@@ -171,7 +171,7 @@ const updateUser = async (
   role
 ) => {
   const query = `
-    UPDATE staff
+    UPDATE users
     SET full_name = $2,
         email = $3,
         phone_number = $4,
