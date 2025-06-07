@@ -265,9 +265,7 @@ const getAllRoles = async () => {
     SELECT 
       r.id,
       r.role_name,
-      r.access_level,
       p.name AS access_level_name,
-      p.description AS access_description,
       p.code AS access_code
     FROM roles r
     LEFT JOIN permissions p ON r.access_level = p.id::text;
