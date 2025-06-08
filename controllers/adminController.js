@@ -462,6 +462,18 @@ const getSpecialistById = async (req, res) => {
   }
 };
 
+const getAllSpecialists = async (req, res) => {
+  try {
+    const specialists = await db.getAllSpecialists();
+    res.status(200).json({ success: true, data: specialists });
+  } catch (error) {
+    console.error("Error fetching specialists:", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch specialists" });
+  }
+};
+
 const editSpecialist = async (req, res) => {
   const { id } = req.params; // changed from name to id
   const { newName, phoneNumber, iin, branch, status, specialistType } =
