@@ -430,6 +430,7 @@ const addSpecialist = async (req, res) => {
     status = "Активный",
     specialistType = "Внешний",
   } = req.body;
+
   try {
     const specialist = await db.addSpecialist(
       name,

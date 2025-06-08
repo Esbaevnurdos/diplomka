@@ -497,27 +497,31 @@ const deleteBranch = async (ids) => {
 };
 
 const addSpecialist = async (
-  fio,
+  name,
   phoneNumber,
   iin,
-  branch,
+  branchName,
   status = "Активный",
   specialistType = "Внешний"
 ) => {
-  const query = `
-    INSERT INTO specialists (name, phone_number, iin, branch, status, specialist_type) 
-    VALUES ($1, $2, $3, $4, $5, $6) 
-    RETURNING *;
-  `;
   try {
+    const branchId = await getBranchIdByName(branchName);
+
+    const query = `
+      INSERT INTO specialists (name, phone_number, iin, branch, status, specialist_type) 
+      VALUES ($1, $2, $3, $4, $5, $6) 
+      RETURNING *;
+    `;
+
     const result = await db.query(query, [
-      fio,
+      name,
       phoneNumber,
       iin,
-      branch,
+      branchId,
       status,
       specialistType,
     ]);
+
     return result.rows[0];
   } catch (error) {
     console.error("Error adding specialist:", error.message);
