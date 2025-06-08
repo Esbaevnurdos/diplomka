@@ -527,16 +527,7 @@ const addSpecialist = async (
 
 const getAllSpecialists = async () => {
   const query = `
-    SELECT 
-      s.id,
-      s.name,
-      s.phone_number,
-      s.iin,
-      b.name AS branch,
-      s.status,
-      s.specialist_type
-    FROM specialists s
-    LEFT JOIN branches b ON s.branch::int = b.id;
+    SELECT * FROM specialists;
   `;
   try {
     const result = await db.query(query);
