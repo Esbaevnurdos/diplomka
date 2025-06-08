@@ -637,20 +637,8 @@ const addPatient = async (
 
 const getAllPatients = async () => {
   const query = `
-    SELECT 
-      p.id,
-      p.name,
-      p.payment_type,
-      p.appointment_date_time,
-      p.comment,
-      p.created_at,
-      p.updated_at,
-      s.name AS service,
-      sp.name AS specialist
-    FROM patients p
-    LEFT JOIN services s ON p.service = s.id
-    LEFT JOIN specialists sp ON p.specialist = sp.id
-    ORDER BY p.appointment_date_time DESC;
+    SELECT * FROM patients
+    ORDER BY appointment_date_time DESC;
   `;
   try {
     const result = await db.query(query);
