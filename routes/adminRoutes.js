@@ -10,7 +10,7 @@ const upload = multer({ storage });
 // const upload = multer({ storage });
 
 router.post("/staff", adminController.addUserController);
-router.delete("/staff/:id", adminController.deleteUserController);
+router.delete("/staff", adminController.deleteUserController);
 router.get("/staff", adminController.getAllUsersController);
 router.put("/staff/:id", adminController.updateUserController);
 router.get("/staff/:id", adminController.getUserByIdController);
