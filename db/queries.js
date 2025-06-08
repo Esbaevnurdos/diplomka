@@ -500,28 +500,24 @@ const addSpecialist = async (
   name,
   phoneNumber,
   iin,
-  branchName,
+  branch, // this is now the name string
   status = "Активный",
   specialistType = "Внешний"
 ) => {
+  const query = `
+    INSERT INTO specialists (name, phone_number, iin, branch, status, specialist_type) 
+    VALUES ($1, $2, $3, $4, $5, $6) 
+    RETURNING *;
+  `;
   try {
-    const branchId = await getBranchIdByName(branchName);
-
-    const query = `
-      INSERT INTO specialists (name, phone_number, iin, branch, status, specialist_type) 
-      VALUES ($1, $2, $3, $4, $5, $6) 
-      RETURNING *;
-    `;
-
     const result = await db.query(query, [
       name,
       phoneNumber,
       iin,
-      branchId,
+      branch,
       status,
       specialistType,
     ]);
-
     return result.rows[0];
   } catch (error) {
     console.error("Error adding specialist:", error.message);
