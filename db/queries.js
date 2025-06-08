@@ -810,13 +810,8 @@ const getAppointmentsReportByDateRange = async (start_date, end_date) => {
 
 const getAllAppointments = async () => {
   const query = `
-    SELECT a.*, 
-           p.name AS patient,
-           s.name AS specialist
-    FROM appointments a
-    LEFT JOIN patients p ON a.patient_id = p.id
-    LEFT JOIN specialists s ON a.specialist_id = s.id
-    ORDER BY a.appointment_date_time DESC;
+    SELECT * FROM appointments
+    ORDER BY appointment_date_time DESC;
   `;
   try {
     const result = await db.query(query);
