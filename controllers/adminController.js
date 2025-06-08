@@ -48,20 +48,20 @@ const addUserController = async (req, res) => {
 
 const deleteUserController = async (req, res) => {
   try {
-    let { fullNames } = req.body;
+    let { ids } = req.body;
 
-    // Normalize input: allow both string and array
-    if (typeof fullNames === "string") {
-      fullNames = [fullNames];
+    // Normalize input: allow both number and array
+    if (typeof ids === "number") {
+      ids = [ids];
     }
 
-    if (!Array.isArray(fullNames) || fullNames.length === 0) {
+    if (!Array.isArray(ids) || ids.length === 0) {
       return res
         .status(400)
-        .json({ error: "fullNames must be a non-empty string or array" });
+        .json({ error: "ids must be a non-empty array of integers" });
     }
 
-    const deletedCount = await db.deleteUser(fullNames);
+    const deletedCount = await db.deleteUser(ids);
 
     res.status(200).json({
       success: true,

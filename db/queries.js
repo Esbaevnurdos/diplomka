@@ -973,7 +973,7 @@ const getAllServices = async () => {
 
 const addExpense = async (category, amount, description) => {
   const query = `
-    INSERT INTO expenses (category, amount, description, created_at)
+    INSERT INTO expenses (name, amount, description, created_at)
     VALUES ($1, $2, $3, NOW())
     RETURNING *;
   `;
