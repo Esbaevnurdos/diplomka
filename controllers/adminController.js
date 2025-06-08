@@ -61,7 +61,7 @@ const deleteUserController = async (req, res) => {
         .json({ error: "fullNames must be a non-empty string or array" });
     }
 
-    const deletedCount = await db.deleteUsersByFullName(fullNames);
+    const deletedCount = await db.deleteUser(fullNames);
 
     res.status(200).json({
       success: true,
@@ -84,9 +84,9 @@ const getAllUsersController = async (req, res) => {
 };
 
 const getUserByIdController = async (req, res) => {
-  const { fullName } = req.params;
+  const { id } = req.params; // use id now
   try {
-    const user = await db.getUserByName(fullName);
+    const user = await db.getUserById(id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -94,17 +94,18 @@ const getUserByIdController = async (req, res) => {
 
     res.status(200).json([user]);
   } catch (error) {
-    console.error("Error fetching user by fullName:", error.message);
+    console.error("Error fetching user by id:", error.message);
     res.status(500).json({ error: "Server error while fetching user" });
   }
 };
 
 const updateUserController = async (req, res) => {
-  const { fullName } = req.params;
-  const { email, phone, address, branch, status, role } = req.body;
+  const { id } = req.params; // use id now
+  const { fullName, email, phone, address, branch, status, role } = req.body;
 
   try {
-    const updatedUser = await db.updateUserByName(
+    const updatedUser = await db.updateUser(
+      id,
       fullName,
       email,
       phone,
@@ -159,8 +160,8 @@ const getRolesController = async (req, res) => {
 };
 
 const updateRoleController = async (req, res) => {
-  const { name } = req.params; // updating by role name
-  const { roleName, permission } = req.body; // use correct fields
+  const { id } = req.params; // updating by role id
+  const { roleName, permission } = req.body;
 
   if (!roleName || roleName.length < 2) {
     return res
@@ -169,7 +170,7 @@ const updateRoleController = async (req, res) => {
   }
 
   try {
-    const updatedRole = await db.updateRole(name, roleName, permission);
+    const updatedRole = await db.updateRole(id, roleName, permission);
     if (!updatedRole) {
       return res.status(404).json({ error: "Role not found" });
     }
@@ -191,7 +192,7 @@ const deleteRoleController = async (req, res) => {
   }
 
   try {
-    const deletedCount = await db.deleteRolesByIds(ids);
+    const deletedCount = await db.deleteRole(ids);
     res.json({
       success: true,
       message: `${deletedCount} role(s) deleted successfully`,
@@ -203,9 +204,9 @@ const deleteRoleController = async (req, res) => {
 };
 
 const getRoleByIdController = async (req, res) => {
-  const { name } = req.params;
+  const { id } = req.params;
   try {
-    const role = await db.getRoleById(name);
+    const role = await db.getRoleById(id);
 
     if (!role) {
       return res.status(404).json({ error: "Role not found" });
@@ -214,7 +215,9 @@ const getRoleByIdController = async (req, res) => {
     res.status(200).json([role]);
   } catch (error) {
     console.error("Error getting role by ID:", error.message);
-    return res.status(404).json([{ error: "Role not found" }]);
+    return res
+      .status(500)
+      .json([{ error: "Server error while fetching role" }]);
   }
 };
 
@@ -252,9 +255,9 @@ const getAllPermissions = async (req, res) => {
 };
 
 const getPermissionById = async (req, res) => {
-  const { name } = req.params;
+  const { id } = req.params;
   try {
-    const permission = await db.getPermissionById(name);
+    const permission = await db.getPermissionById(id);
 
     if (!permission) {
       return res
@@ -264,7 +267,7 @@ const getPermissionById = async (req, res) => {
 
     res.status(200).json({ success: true, data: permission });
   } catch (error) {
-    console.error("Error fetching permission by name:", error.message);
+    console.error("Error fetching permission by ID:", error.message);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch permission" });
@@ -272,12 +275,12 @@ const getPermissionById = async (req, res) => {
 };
 
 const updatePermission = async (req, res) => {
-  const { name } = req.params;
+  const { id } = req.params;
   const { newName, description, code } = req.body;
 
   try {
     const updatedPermission = await db.updatePermission(
-      name,
+      id,
       newName,
       description,
       code
@@ -287,17 +290,15 @@ const updatePermission = async (req, res) => {
   } catch (error) {
     console.error("Error updating permission:", error.message);
 
-    // If permission not found → 404
     if (error.message === "Permission not found") {
       return res
         .status(404)
         .json({ success: false, message: "Permission not found" });
     }
 
-    // Otherwise → 500
     res
       .status(500)
-      .json({ success: false, message: "Failed to fetch permission" });
+      .json({ success: false, message: "Failed to update permission" });
   }
 };
 
@@ -313,7 +314,7 @@ const deletePermission = async (req, res) => {
   }
 
   try {
-    const deletedCount = await db.deletePermissions(ids);
+    const deletedCount = await db.deletePermission(ids);
     res.status(200).json({
       success: true,
       message: `${deletedCount} permission(s) deleted successfully`,
@@ -343,10 +344,35 @@ const addBranch = async (req, res) => {
   }
 };
 
-const getBranchById = async (req, res) => {
-  const { name } = req.params;
+const updateBranch = async (req, res) => {
+  const { id } = req.params; // changed from name to id
+  const { newName, address, email, phoneNumber, status } = req.body;
+
   try {
-    const branch = await db.getBranchById(name);
+    const updatedBranch = await db.updateBranch(
+      id,
+      newName,
+      address,
+      email,
+      phoneNumber,
+      status
+    );
+    res.status(200).json([updatedBranch]);
+  } catch (error) {
+    console.error("Error updating branch:", error.message);
+
+    if (error.message === "Branch not found") {
+      return res.status(404).json([{ error: "Branch not found" }]);
+    }
+
+    res.status(500).json([{ error: "Failed to update branch" }]);
+  }
+};
+
+const getBranchById = async (req, res) => {
+  const { id } = req.params; // changed from name to id
+  try {
+    const branch = await db.getBranchById(id);
     if (!branch) {
       return res.status(404).json([{ error: "Branch not found" }]);
     }
@@ -367,31 +393,6 @@ const getAllBranches = async (req, res) => {
   }
 };
 
-const updateBranch = async (req, res) => {
-  const { name } = req.params; // original branch name in URL
-  const { newName, address, email, phoneNumber, status } = req.body;
-
-  try {
-    const updatedBranch = await db.updateBranch(
-      name,
-      newName,
-      address,
-      email,
-      phoneNumber,
-      status
-    );
-    res.status(200).json([updatedBranch]);
-  } catch (error) {
-    console.error("Error updating branch:", error.message);
-
-    if (error.message === "Branch not found") {
-      return res.status(404).json([{ error: "Branch not found" }]);
-    }
-
-    res.status(500).json([{ error: "Failed to update branch" }]);
-  }
-};
-
 const deleteBranch = async (req, res) => {
   let { ids } = req.body;
 
@@ -404,7 +405,7 @@ const deleteBranch = async (req, res) => {
   }
 
   try {
-    const deletedBranches = await db.deleteBranches(ids);
+    const deletedBranches = await db.deleteBranch(ids);
     if (deletedBranches.length === 0) {
       return res.status(404).json([{ error: "No branches found to delete" }]);
     }
@@ -445,58 +446,72 @@ const addSpecialist = async (req, res) => {
   }
 };
 
-const editSpecialist = async (req, res) => {
-  const { id } = req.params;
-  const { name, phoneNumber, iin, branch, status, specialistType } = req.body;
+// Get specialist by name
+const getSpecialistById = async (req, res) => {
+  const { id } = req.params; // changed from name to id
+
   try {
-    const updatedSpecialist = await db.editSpecialist(
+    const specialist = await db.getSpecialistById(id);
+    if (!specialist) {
+      return res.status(404).json({ error: "Specialist not found" });
+    }
+    res.status(200).json(specialist);
+  } catch (error) {
+    console.error("Error fetching specialist by id:", error.message);
+    res.status(500).json({ error: "Failed to fetch specialist" });
+  }
+};
+
+const editSpecialist = async (req, res) => {
+  const { id } = req.params; // changed from name to id
+  const { newName, phoneNumber, iin, branch, status, specialistType } =
+    req.body;
+
+  try {
+    const updatedSpecialist = await db.updateSpecialist(
       id,
-      name,
+      newName || undefined, // if newName is not provided, use undefined or keep existing in DB
       phoneNumber,
       iin,
       branch,
       status,
       specialistType
     );
-    res.status(200).json([updatedSpecialist]);
+
+    res.status(200).json(updatedSpecialist);
   } catch (error) {
+    if (error.message === "Specialist not found") {
+      return res.status(404).json({ error: "Specialist not found" });
+    }
     console.error("Error updating specialist:", error.message);
-    res.status(500).json([{ error: "Failed to update specialist" }]);
+    res.status(500).json({ error: "Failed to update specialist" });
   }
 };
 
 const deleteSpecialist = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await db.deleteSpecialist(id);
-    res.status(200).json([{ message: "Specialist deleted successfully" }]);
-  } catch (error) {
-    console.error("Error deleting specialist:", error.message);
-    res.status(500).json([{ error: "Failed to delete specialist" }]);
-  }
-};
+  let { ids } = req.body;
 
-const getSpecialistById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const specialist = await db.getSpecialistById(id);
-    if (!specialist) {
-      return res.status(404).json([{ error: "Specialist not found" }]);
-    }
-    res.status(200).json([specialist]);
-  } catch (error) {
-    console.error("Error fetching specialist by ID:", error.message);
-    res.status(500).json([{ error: "Failed to fetch specialist" }]);
+  // Normalize to array
+  if (typeof ids === "number" || typeof ids === "string") {
+    ids = [parseInt(ids)];
   }
-};
 
-const getAllSpecialists = async (req, res) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res
+      .status(400)
+      .json([{ error: "Provide one or more specialist IDs to delete" }]);
+  }
+
   try {
-    const specialists = await db.getAllSpecialists();
-    res.status(200).json(specialists); // just return the array
+    const deletedCount = await db.deleteSpecialist(ids);
+    res
+      .status(200)
+      .json([
+        { message: `${deletedCount} specialist(s) deleted successfully` },
+      ]);
   } catch (error) {
-    console.error("Error fetching specialists:", error.message);
-    res.status(500).json([{ error: "Failed to fetch specialists" }]);
+    console.error("Error deleting specialists:", error.message);
+    res.status(500).json([{ error: "Failed to delete specialists" }]);
   }
 };
 
@@ -538,38 +553,8 @@ const getAllPatients = async (req, res) => {
   }
 };
 
-const updatePatient = async (req, res) => {
-  const { id } = req.params;
-  const {
-    name,
-    service,
-    paymentType,
-    appointmentDateTime,
-    specialist,
-    comment,
-  } = req.body;
-
-  try {
-    const updatedPatient = await db.updatePatient(
-      id,
-      name,
-      service,
-      paymentType,
-      appointmentDateTime,
-      specialist,
-      comment
-    );
-    res.status(200).json({ success: true, data: updatedPatient });
-  } catch (error) {
-    console.error("Error updating patient:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to update patient" });
-  }
-};
-
 const getPatientById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // changed from name to id
 
   try {
     const patient = await db.getPatientById(id);
@@ -582,25 +567,63 @@ const getPatientById = async (req, res) => {
 
     res.status(200).json({ success: true, data: patient });
   } catch (error) {
-    console.error("Error fetching patient by ID:", error.message);
+    console.error("Error fetching patient by id:", error.message);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch patient" });
   }
 };
 
-const deletePatient = async (req, res) => {
-  const { id } = req.params;
+const updatePatient = async (req, res) => {
+  const { id } = req.params; // changed from name to id
+  const { service, paymentType, appointmentDateTime, specialist, comment } =
+    req.body;
+
   try {
-    await db.deletePatient(id);
-    res
-      .status(200)
-      .json({ success: true, message: "Patient deleted successfully" });
+    const updatedPatient = await db.updatePatient(
+      id,
+      service,
+      paymentType,
+      appointmentDateTime,
+      specialist,
+      comment
+    );
+
+    res.status(200).json({ success: true, data: updatedPatient });
   } catch (error) {
-    console.error("Error deleting patient:", error.message);
+    console.error("Error updating patient by id:", error.message);
+    if (error.message === "Patient not found") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
+    }
     res
       .status(500)
-      .json({ success: false, message: "Failed to delete patient" });
+      .json({ success: false, message: "Failed to update patient" });
+  }
+};
+
+const deletePatient = async (req, res) => {
+  const { ids } = req.body; // expecting: { "ids": [1, 2, 3] }
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or empty 'ids' array" });
+  }
+
+  try {
+    await db.deletePatient(ids);
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${ids.length} patient(s) successfully`,
+    });
+  } catch (error) {
+    console.error("Error deleting patients:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete patients",
+    });
   }
 };
 
@@ -646,32 +669,8 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
-const updateAppointment = async (req, res) => {
-  const { id } = req.params;
-  const { patient, specialist, service, appointmentDateTime, comment, status } =
-    req.body;
-
-  try {
-    const updated = await db.updateAppointment(
-      id,
-      patient,
-      specialist,
-      service,
-      appointmentDateTime,
-      comment,
-      status
-    );
-    res.status(200).json({ success: true, data: updated });
-  } catch (error) {
-    console.error("Error updating appointment:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to update appointment" });
-  }
-};
-
 const getAppointmentById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // appointment ID from URL
 
   try {
     const appointment = await db.getAppointmentById(id);
@@ -691,18 +690,57 @@ const getAppointmentById = async (req, res) => {
   }
 };
 
-const deleteAppointment = async (req, res) => {
-  const { id } = req.params;
+const updateAppointment = async (req, res) => {
+  const { id } = req.params; // appointment ID from URL
+  const { specialist, service, appointmentDateTime, comment, status } =
+    req.body;
+
   try {
-    await db.deleteAppointment(id);
-    res
-      .status(200)
-      .json({ success: true, message: "Appointment deleted successfully" });
+    const updated = await db.updateAppointmentById(
+      id,
+      specialist,
+      service,
+      appointmentDateTime,
+      comment,
+      status
+    );
+
+    res.status(200).json({ success: true, data: updated });
   } catch (error) {
-    console.error("Error deleting appointment:", error.message);
+    console.error("Error updating appointment:", error.message);
+
+    if (error.message === "Appointment not found") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Appointment not found" });
+    }
+
     res
       .status(500)
-      .json({ success: false, message: "Failed to delete appointment" });
+      .json({ success: false, message: "Failed to update appointment" });
+  }
+};
+
+const deleteAppointment = async (req, res) => {
+  const ids = req.body.ids;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Provide an array of appointment IDs to delete.",
+    });
+  }
+
+  try {
+    await db.deleteAppointment(ids);
+    res
+      .status(200)
+      .json({ success: true, message: "Appointments deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting appointments:", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete appointments" });
   }
 };
 
@@ -773,13 +811,13 @@ const addService = async (req, res) => {
 };
 
 const updateService = async (req, res) => {
-  const { id } = req.params;
-  const { name, description, price, isAvailable } = req.body;
+  const { id } = req.params; // using id now
+  const { newName, description, price, isAvailable } = req.body;
 
   try {
     const updated = await db.updateService(
       id,
-      name,
+      newName,
       description,
       price,
       isAvailable
@@ -787,6 +825,11 @@ const updateService = async (req, res) => {
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
     console.error("Error updating service:", error.message);
+    if (error.message === "Service not found") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Service not found" });
+    }
     res
       .status(500)
       .json({ success: false, message: "Failed to update service" });
@@ -805,22 +848,33 @@ const getServiceById = async (req, res) => {
     }
     res.status(200).json({ success: true, data: service });
   } catch (error) {
-    console.error("Error fetching service by ID:", error.message);
+    console.error("Error fetching service:", error.message);
     res.status(500).json({ success: false, message: "Failed to get service" });
   }
 };
 
 const deleteService = async (req, res) => {
-  const { id } = req.params;
+  const { names } = req.body; // e.g., { names: ["Cleaning", "X-Ray"] }
+
+  if (!Array.isArray(names) || names.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Provide a non-empty array of service names",
+    });
+  }
 
   try {
-    await db.deleteService(id);
-    res.status(200).json({ success: true, message: "Service deleted" });
+    await db.deleteService(names);
+    res.status(200).json({
+      success: true,
+      message: "Services deleted successfully",
+    });
   } catch (error) {
-    console.error("Error deleting service:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to delete service" });
+    console.error("Error deleting services:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete services",
+    });
   }
 };
 
@@ -857,7 +911,7 @@ const getExpenses = async (_req, res) => {
 };
 
 const getExpenseById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // use id now
 
   try {
     const expense = await db.getExpenseById(id);
@@ -866,13 +920,13 @@ const getExpenseById = async (req, res) => {
     }
     res.status(200).json([expense]);
   } catch (error) {
-    console.error("Error fetching expense by ID:", error.message);
+    console.error("Error fetching expense by id:", error.message);
     res.status(500).json([{ error: "Failed to get expense" }]);
   }
 };
 
 const editExpense = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // use id now
   const { category, amount, description } = req.body;
 
   try {
@@ -888,17 +942,23 @@ const editExpense = async (req, res) => {
 };
 
 const deleteExpense = async (req, res) => {
-  const { id } = req.params;
+  const { ids } = req.body; // Expecting an array of ids like [1, 2, 3]
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res
+      .status(400)
+      .json([{ error: "Please provide an array of expense IDs to delete." }]);
+  }
 
   try {
-    const expense = await db.deleteExpense(id);
-    if (!expense) {
-      return res.status(404).json([{ error: "Expense not found" }]);
+    const deletedExpenses = await db.deleteExpense(ids);
+    if (deletedExpenses.length === 0) {
+      return res.status(404).json([{ error: "No expenses found to delete." }]);
     }
-    res.status(200).json([{ message: "Expense deleted", ...expense }]);
+    res.status(200).json({ message: "Expenses deleted", deletedExpenses });
   } catch (error) {
-    console.error("Error deleting expense:", error.message);
-    res.status(500).json([{ error: "Failed to delete expense" }]);
+    console.error("Error deleting expenses:", error.message);
+    res.status(500).json([{ error: "Failed to delete expenses" }]);
   }
 };
 
@@ -944,7 +1004,7 @@ const editExpenseCategory = async (req, res) => {
 };
 
 const getExpenseCategoryById = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // changed from name to id
 
   try {
     const category = await db.getExpenseCategoryById(id);
@@ -953,7 +1013,7 @@ const getExpenseCategoryById = async (req, res) => {
     }
     res.status(200).json([category]);
   } catch (error) {
-    console.error("Error fetching category by ID:", error.message);
+    console.error("Error fetching category by id:", error.message);
     res.status(500).json([{ error: "Failed to fetch category" }]);
   }
 };
@@ -1227,26 +1287,29 @@ const getExpenseReportByDateRange = async (req, res) => {
 
 const createCashboxTransaction = async (req, res) => {
   try {
-    let { service_ids, ...transactionData } = req.body;
+    let { service_names, ...transactionData } = req.body;
 
-    // Normalize single value to array
-    if (!Array.isArray(service_ids)) {
-      service_ids = [service_ids];
+    if (!Array.isArray(service_names)) {
+      service_names = [service_names];
     }
 
-    if (service_ids.length === 0) {
+    if (service_names.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "At least one service_id is required",
+        message: "At least one service_name is required",
       });
     }
 
-    const transactionId = await db.createTransaction({
+    // Generate a readable transaction name (you can change this logic)
+    const name = `txn_${Date.now()}`;
+
+    const transactionName = await db.createTransaction({
       ...transactionData,
-      service_ids,
+      name,
+      service_names,
     });
 
-    res.status(201).json({ success: true, transaction_id: transactionId });
+    res.status(201).json({ success: true, transaction_name: transactionName });
   } catch (error) {
     console.error("Error creating cashbox transaction:", error.message);
     res

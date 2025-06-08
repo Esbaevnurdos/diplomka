@@ -12,20 +12,20 @@ const upload = multer({ storage });
 router.post("/staff", adminController.addUserController);
 router.delete("/staff/:id", adminController.deleteUserController);
 router.get("/staff", adminController.getAllUsersController);
-router.put("/staff/:name", adminController.updateUserController);
-router.get("/staff/:name", adminController.getUserByIdController);
+router.put("/staff/:id", adminController.updateUserController);
+router.get("/staff/:id", adminController.getUserByIdController);
 
 router.post("/roles", adminController.createRoleController);
 router.get("/roles", adminController.getRolesController);
-router.put("/roles/:name", adminController.updateRoleController);
+router.put("/roles/:id", adminController.updateRoleController);
 router.delete("/roles/:id", adminController.deleteRoleController);
-router.get("/roles/:name", adminController.getRoleByIdController);
+router.get("/roles/:id", adminController.getRoleByIdController);
 
 router.post("/permissions", adminController.addPermission);
 router.get("/permissions", adminController.getAllPermissions);
-router.put("/permissions/:name", adminController.updatePermission);
+router.put("/permissions/:id", adminController.updatePermission);
 router.delete("/permissions/:id", adminController.deletePermission);
-router.get("/permissions/:name", adminController.getPermissionById);
+router.get("/permissions/:id", adminController.getPermissionById);
 
 router.post("/branches", adminController.addBranch);
 router.get("/branches", adminController.getAllBranches);

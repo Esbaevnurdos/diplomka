@@ -164,18 +164,23 @@ const getAllUsers = async () => {
   }
 };
 
-const getUserById = async (fullName) => {
-  const query = `SELECT id, full_name, email, phone, address, branch, status, role FROM users WHERE full_name = $1`;
+const getUserById = async (id) => {
+  const query = `
+    SELECT id, full_name, email, phone, address, branch, status, role 
+    FROM users 
+    WHERE id = $1
+  `;
   try {
-    const result = await db.query(query, [fullName]);
+    const result = await db.query(query, [id]);
     return result.rows[0];
   } catch (error) {
-    console.error("Error fetching user by full_name:", error.message);
+    console.error("Error fetching user by id:", error.message);
     throw error;
   }
 };
 
 const updateUser = async (
+  id,
   fullName,
   email,
   phone,
@@ -186,25 +191,27 @@ const updateUser = async (
 ) => {
   const query = `
     UPDATE users
-    SET email = $2,
-        phone = $3,
-        address = $4,
-        branch = $5,
-        status = $6,
-        role = $7
-    WHERE full_name = $1
+    SET full_name = $2,
+        email = $3,
+        phone = $4,
+        address = $5,
+        branch = $6,
+        status = $7,
+        role = $8
+    WHERE id = $1
     RETURNING id, full_name, email, phone, address, branch, status, role;
   `;
-  const values = [fullName, email, phone, address, branch, status, role];
+  const values = [id, fullName, email, phone, address, branch, status, role];
 
   try {
     const result = await db.query(query, values);
     return result.rows[0];
   } catch (error) {
-    console.error("Error updating user by full_name:", error.message);
+    console.error("Error updating user by id:", error.message);
     throw error;
   }
 };
+
 const getAvailableDoctors = async () => {
   const query = `
     SELECT id, full_name, phone, branch, status 
@@ -270,27 +277,26 @@ const getAllRoles = async () => {
   }
 };
 
-const updateRole = async (oldName, newName, permission) => {
+const updateRole = async (id, newName, permission) => {
   const query = `
     UPDATE roles 
     SET name = $1, permission = $2
-    WHERE name = $3
+    WHERE id = $3
     RETURNING *;
   `;
 
   try {
-    const result = await db.query(query, [newName, permission, oldName]);
+    const result = await db.query(query, [newName, permission, id]);
     return result.rows[0]; // undefined if no role updated
   } catch (error) {
     console.error("Error updating role:", error.message);
     throw error;
   }
 };
-
-const getRoleById = async (name) => {
-  const query = `SELECT * FROM roles WHERE name = $1;`;
+const getRoleById = async (id) => {
+  const query = `SELECT * FROM roles WHERE id = $1;`;
   try {
-    const result = await db.query(query, [name]);
+    const result = await db.query(query, [id]);
     return result.rows[0];
   } catch (error) {
     console.error("Error fetching role by ID:", error.message);
@@ -339,10 +345,10 @@ const getAllPermissions = async () => {
   }
 };
 
-const getPermissionById = async (name) => {
-  const query = `SELECT * FROM permissions WHERE name = $1;`;
+const getPermissionById = async (id) => {
+  const query = `SELECT * FROM permissions WHERE id = $1;`;
   try {
-    const result = await db.query(query, [name]);
+    const result = await db.query(query, [id]);
     return result.rows[0]; // returns undefined if not found
   } catch (error) {
     console.error("Error fetching permission by ID:", error.message);
@@ -350,24 +356,24 @@ const getPermissionById = async (name) => {
   }
 };
 
-const updatePermission = async (name, newName, description, code) => {
+const updatePermission = async (id, newName, description, code) => {
   const query = `
     UPDATE permissions 
     SET name = $1, description = $2, code = $3 
-    WHERE name = $4 
+    WHERE id = $4 
     RETURNING *;
   `;
   try {
-    const result = await db.query(query, [newName, description, code, name]);
+    const result = await db.query(query, [newName, description, code, id]);
 
     if (result.rows.length === 0) {
-      throw new Error("Permission not found"); // <- для 404
+      throw new Error("Permission not found"); // for 404 handling
     }
 
     return result.rows[0];
   } catch (error) {
     console.error("Error updating permission:", error.message);
-    throw error; // <- будет перехвачен в контроллере
+    throw error; // will be caught in controller
   }
 };
 
@@ -416,10 +422,45 @@ const addBranch = async (
   }
 };
 
-const getBranchById = async (name) => {
-  const query = `SELECT * FROM branches WHERE name = $1;`;
+const updateBranch = async (
+  id,
+  newName,
+  address,
+  email,
+  phoneNumber,
+  status
+) => {
+  const query = `
+    UPDATE branches 
+    SET name = $1, address = $2, email = $3, phone_number = $4, status = $5 
+    WHERE id = $6 
+    RETURNING *;
+  `;
   try {
-    const result = await db.query(query, [name]);
+    const result = await db.query(query, [
+      newName,
+      address,
+      email,
+      phoneNumber,
+      status,
+      id, // match by id now
+    ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Branch not found");
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error updating branch:", error.message);
+    throw error;
+  }
+};
+
+const getBranchById = async (id) => {
+  const query = `SELECT * FROM branches WHERE id = $1;`;
+  try {
+    const result = await db.query(query, [id]);
     if (result.rows.length === 0) {
       throw new Error("Branch not found");
     }
@@ -437,41 +478,6 @@ const getAllBranches = async () => {
     return result.rows;
   } catch (error) {
     console.error("Error fetching branches:", error.message);
-    throw error;
-  }
-};
-
-const updateBranch = async (
-  name,
-  newName,
-  address,
-  email,
-  phoneNumber,
-  status
-) => {
-  const query = `
-    UPDATE branches 
-    SET name = $1, address = $2, email = $3, phone_number = $4, status = $5 
-    WHERE name = $6 
-    RETURNING *;
-  `;
-  try {
-    const result = await db.query(query, [
-      newName,
-      address,
-      email,
-      phoneNumber,
-      status,
-      name, // original name to match in WHERE
-    ]);
-
-    if (result.rows.length === 0) {
-      throw new Error("Branch not found");
-    }
-
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error updating branch:", error.message);
     throw error;
   }
 };
@@ -544,7 +550,7 @@ const getAllSpecialists = async () => {
 
 const updateSpecialist = async (
   id,
-  fio,
+  newName,
   phoneNumber,
   iin,
   branch,
@@ -552,21 +558,27 @@ const updateSpecialist = async (
   specialistType
 ) => {
   const query = `
-    UPDATE specialists 
-    SET fio = $1, phone_number = $2, iin = $3, branch = $4, status = $5, specialist_type = $6 
-    WHERE id = $7 
+    UPDATE specialists
+    SET name = $1, phone_number = $2, iin = $3, branch = $4, status = $5, specialist_type = $6
+    WHERE id = $7
     RETURNING *;
   `;
+
   try {
     const result = await db.query(query, [
-      fio,
+      newName,
       phoneNumber,
       iin,
       branch,
       status,
       specialistType,
-      id,
+      id, // use id here
     ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Specialist not found");
+    }
+
     return result.rows[0];
   } catch (error) {
     console.error("Error updating specialist:", error.message);
@@ -575,23 +587,31 @@ const updateSpecialist = async (
 };
 
 const getSpecialistById = async (id) => {
-  const query = `SELECT * FROM specialists WHERE id = $1;`;
+  const query = `
+    SELECT id, name, phone_number, iin, branch, status, specialist_type
+    FROM specialists
+    WHERE id = $1;
+  `;
+
   try {
     const result = await db.query(query, [id]);
     return result.rows[0];
   } catch (error) {
-    console.error("Error fetching specialist by ID:", error.message);
+    console.error("Error fetching specialist by id:", error.message);
     throw error;
   }
 };
 
-const deleteSpecialist = async (id) => {
-  const query = `DELETE FROM specialists WHERE id = $1;`;
+const deleteSpecialist = async (ids) => {
+  const query = `
+    DELETE FROM specialists 
+    WHERE id = ANY($1::int[]); -- Efficient bulk delete using ANY
+  `;
   try {
-    await db.query(query, [id]);
-    console.log("Specialist deleted successfully");
+    const result = await db.query(query, [ids]);
+    return result.rowCount; // number of deleted rows
   } catch (error) {
-    console.error("Error deleting specialist:", error.message);
+    console.error("Error deleting specialists:", error.message);
     throw error;
   }
 };
@@ -655,16 +675,15 @@ const getPatientById = async (id) => {
   const query = `SELECT * FROM patients WHERE id = $1;`;
   try {
     const result = await db.query(query, [id]);
-    return result.rows[0]; // Returns undefined if not found
+    return result.rows[0]; // returns patient object or undefined
   } catch (error) {
-    console.error("Error fetching patient by ID:", error.message);
+    console.error("Error fetching patient by id:", error.message);
     throw error;
   }
 };
 
 const updatePatient = async (
   id,
-  name,
   service,
   paymentType,
   appointmentDateTime,
@@ -673,13 +692,12 @@ const updatePatient = async (
 ) => {
   const query = `
     UPDATE patients 
-    SET name = $1, service = $2, payment_type = $3, appointment_date_time = $4, specialist = $5, comment = $6
-    WHERE id = $7
+    SET service = $1, payment_type = $2, appointment_date_time = $3, specialist = $4, comment = $5
+    WHERE id = $6
     RETURNING *;
   `;
   try {
     const result = await db.query(query, [
-      name,
       service,
       paymentType,
       appointmentDateTime,
@@ -687,19 +705,22 @@ const updatePatient = async (
       comment,
       id,
     ]);
+    if (result.rows.length === 0) {
+      throw new Error("Patient not found");
+    }
     return result.rows[0];
   } catch (error) {
-    console.error("Error updating patient:", error.message);
+    console.error("Error updating patient by id:", error.message);
     throw error;
   }
 };
 
-const deletePatient = async (id) => {
-  const query = `DELETE FROM patients WHERE id = $1;`;
+const deletePatient = async (ids) => {
+  const query = `DELETE FROM patients WHERE id = ANY($1::int[]);`;
   try {
-    await db.query(query, [id]);
+    await db.query(query, [ids]);
   } catch (error) {
-    console.error("Error deleting patient:", error.message);
+    console.error("Error deleting patients:", error.message);
     throw error;
   }
 };
@@ -828,20 +849,11 @@ const getAllAppointments = async () => {
   }
 };
 
-const getAppointmentById = async (id) => {
-  const query = `
-    SELECT a.*, 
-           p.name AS patient,
-           s.name AS specialist
-    FROM appointments a
-    LEFT JOIN patients p ON a.patient_id = p.id
-    LEFT JOIN specialists s ON a.specialist_id = s.id
-    WHERE a.id = $1;
-  `;
-
+const getAppointmentById = async (appointmentId) => {
+  const query = `SELECT * FROM appointments WHERE id = $1;`; // use id column here
   try {
-    const result = await db.query(query, [id]);
-    return result.rows[0];
+    const result = await db.query(query, [appointmentId]);
+    return result.rows[0]; // returns one appointment or undefined
   } catch (error) {
     console.error("Error fetching appointment by ID:", error.message);
     throw error;
@@ -849,9 +861,8 @@ const getAppointmentById = async (id) => {
 };
 
 const updateAppointment = async (
-  id,
-  patientId,
-  specialistId,
+  appointmentId,
+  specialist,
   service,
   appointmentDateTime,
   comment,
@@ -859,33 +870,38 @@ const updateAppointment = async (
 ) => {
   const query = `
     UPDATE appointments 
-    SET patient = $1, specialist = $2, service = $3, appointment_date_time = $4, comment = $5, status = $6
-    WHERE id = $7
+    SET specialist = $1, service = $2, appointment_date_time = $3, comment = $4, status = $5
+    WHERE id = $6
     RETURNING *;
   `;
+
   try {
     const result = await db.query(query, [
-      patientId,
-      specialistId,
+      specialist,
       service,
       appointmentDateTime,
       comment,
       status,
-      id,
+      appointmentId,
     ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Appointment not found");
+    }
+
     return result.rows[0];
   } catch (error) {
-    console.error("Error updating appointment:", error.message);
+    console.error("Error updating appointment by ID:", error.message);
     throw error;
   }
 };
 
-const deleteAppointment = async (id) => {
-  const query = `DELETE FROM appointments WHERE id = $1;`;
+const deleteAppointment = async (ids) => {
+  const query = `DELETE FROM appointments WHERE id = ANY($1::int[]);`;
   try {
-    await db.query(query, [id]);
+    await db.query(query, [ids]);
   } catch (error) {
-    console.error("Error deleting appointment:", error.message);
+    console.error("Error deleting appointments:", error.message);
     throw error;
   }
 };
@@ -924,26 +940,55 @@ const addService = async (name, description, price, isAvailable) => {
   return result.rows[0];
 };
 
-const updateService = async (id, name, description, price, isAvailable) => {
+const updateService = async (id, newName, description, price, isAvailable) => {
   const query = `
-    UPDATE services
+    UPDATE services 
     SET name = $1, description = $2, price = $3, is_available = $4
-    WHERE id = $5 RETURNING *;
+    WHERE id = $5
+    RETURNING *;
   `;
-  const values = [name, description, price, isAvailable, id];
-  const result = await db.query(query, values);
-  return result.rows[0];
+
+  try {
+    const result = await db.query(query, [
+      newName,
+      description,
+      price,
+      isAvailable,
+      id,
+    ]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Service not found");
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error updating service:", error.message);
+    throw error;
+  }
 };
 
 const getServiceById = async (id) => {
   const query = `SELECT * FROM services WHERE id = $1;`;
-  const result = await db.query(query, [id]);
-  return result.rows[0];
+  try {
+    const result = await db.query(query, [id]);
+    return result.rows[0]; // undefined if not found
+  } catch (error) {
+    console.error("Error fetching service:", error.message);
+    throw error;
+  }
 };
 
-const deleteService = async (id) => {
-  const query = `DELETE FROM services WHERE id = $1;`;
-  await db.query(query, [id]);
+const deleteService = async (names) => {
+  const placeholders = names.map((_, i) => `$${i + 1}`).join(", ");
+  const query = `DELETE FROM services WHERE name IN (${placeholders});`;
+
+  try {
+    await db.query(query, names);
+  } catch (error) {
+    console.error("Error deleting services:", error.message);
+    throw error;
+  }
 };
 
 const getAllServices = async () => {
@@ -974,25 +1019,25 @@ const getExpenses = async () => {
 const getExpenseById = async (id) => {
   const query = `SELECT * FROM expenses WHERE id = $1;`;
   const result = await db.query(query, [id]);
-  return result.rows[0];
+  return result.rows[0]; // undefined if not found
 };
 
 const updateExpense = async (id, category, amount, description) => {
   const query = `
     UPDATE expenses
-    SET category = $1, amount = $2, description = $3
+    SET name = $1, amount = $2, description = $3
     WHERE id = $4
     RETURNING *;
   `;
   const values = [category, amount, description, id];
   const result = await db.query(query, values);
-  return result.rows[0];
+  return result.rows[0]; // undefined if not found
 };
 
-const deleteExpense = async (id) => {
-  const query = `DELETE FROM expenses WHERE id = $1 RETURNING *;`;
-  const result = await db.query(query, [id]);
-  return result.rows[0];
+const deleteExpense = async (ids) => {
+  const query = `DELETE FROM expenses WHERE id = ANY($1) RETURNING *;`;
+  const result = await db.query(query, [ids]);
+  return result.rows; // array of deleted rows
 };
 
 const addExpenseCategory = async (name, description) => {
@@ -1013,28 +1058,27 @@ const getExpenseCategories = async () => {
   return result.rows;
 };
 
+const updateExpenseCategory = async (id, name, description) => {
+  const query = `
+    UPDATE expense_categories
+    SET name = $2, description = $3
+    WHERE id = $1
+    RETURNING *;
+  `;
+  const result = await db.query(query, [id, name, description]);
+  return result.rows[0];
+};
+
 const getExpenseCategoryById = async (id) => {
   const query = `SELECT * FROM expense_categories WHERE id = $1;`;
   const result = await db.query(query, [id]);
   return result.rows[0];
 };
 
-const updateExpenseCategory = async (id, name, description) => {
-  const query = `
-    UPDATE expense_categories
-    SET name = $1, description = $2
-    WHERE id = $3
-    RETURNING *;
-  `;
-  const values = [name, description, id];
-  const result = await db.query(query, values);
-  return result.rows[0];
-};
-
-const deleteExpenseCategory = async (id) => {
-  const query = `DELETE FROM expense_categories WHERE id = $1 RETURNING *;`;
-  const result = await db.query(query, [id]);
-  return result.rows[0];
+const deleteExpenseCategory = async (ids) => {
+  const query = `DELETE FROM expense_categories WHERE id = ANY($1) RETURNING *;`;
+  const result = await db.query(query, [ids]);
+  return result.rows; // return array of deleted categories
 };
 
 const getExpenseReport = async (query, values) => {
@@ -1042,33 +1086,35 @@ const getExpenseReport = async (query, values) => {
 };
 
 const createTransaction = async ({
-  patient_id,
-  specialist_id,
+  name,
+  patient,
+  specialist,
   amount,
   payment_method,
   comment,
-  service_ids,
+  service_names,
 }) => {
   const insertTransactionQuery = `
-    INSERT INTO transactions (patient_id, specialist_id, amount, payment_method, comment, created_at)
-    VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id;
+    INSERT INTO transactions (name, patient, specialist, amount, payment_method, comment, created_at)
+    VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING name;
   `;
-  const transactionResult = await db.query(insertTransactionQuery, [
-    patient_id,
-    specialist_id,
+  const result = await db.query(insertTransactionQuery, [
+    name,
+    patient,
+    specialist,
     amount,
     payment_method,
     comment,
   ]);
-  const transactionId = transactionResult.rows[0].id;
+  const transactionName = result.rows[0].name;
 
   const insertLinks = `
-    INSERT INTO transaction_services (transaction_id, service_id)
-    VALUES ${service_ids.map((_, i) => `($1, $${i + 2})`).join(", ")};
+    INSERT INTO transaction_services (transaction_name, service_name)
+    VALUES ${service_names.map((_, i) => `($1, $${i + 2})`).join(", ")};
   `;
-  await db.query(insertLinks, [transactionId, ...service_ids]);
+  await db.query(insertLinks, [transactionName, ...service_names]);
 
-  return transactionId;
+  return transactionName;
 };
 
 const getTransactions = async () => {
