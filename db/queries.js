@@ -91,7 +91,6 @@ const addUser = async (
   role
 ) => {
   try {
-    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const insertQuery = `
@@ -114,7 +113,7 @@ const addUser = async (
       fullName,
       email,
       phone,
-      hashedPassword, // use hashed password here
+      hashedPassword,
       address,
       branch,
       status,
