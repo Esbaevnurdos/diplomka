@@ -1294,7 +1294,7 @@ const getExpenseReportByPeriod = async (req, res) => {
       totalExpenses: parseFloat(row.total_expenses),
       categoriesSummary: row.categories_summary,
     }));
-    res.status(200).json([{ success: true, data }]);
+    res.status(200).json([{ data }]);
   } catch (error) {
     console.error("❌ Report generation failed:", error);
     res.status(500).json({
@@ -1347,7 +1347,7 @@ const getExpenseReportByDateRange = async (req, res) => {
       categoriesSummary: obj.categoriesSummary,
     }));
 
-    res.status(200).json([{ success: true, data }]);
+    res.status(200).json([{ data }]);
   } catch (error) {
     console.error("❌ Date range report generation failed:", error);
     res.status(500).json({
@@ -1382,9 +1382,7 @@ const createCashboxTransaction = async (req, res) => {
       service_names,
     });
 
-    res
-      .status(201)
-      .json([{ success: true, transaction_name: transactionName }]);
+    res.status(201).json([{ transactionName }]);
   } catch (error) {
     console.error("Error creating cashbox transaction:", error.message);
     res
@@ -1396,7 +1394,7 @@ const createCashboxTransaction = async (req, res) => {
 const getCashboxTransactions = async (req, res) => {
   try {
     const transactions = await db.getTransactions();
-    res.status(200).json([{ success: true, data: transactions }]);
+    res.status(200).json([{ transactions }]);
   } catch (error) {
     console.error("Error fetching cashbox transactions:", error.message);
     res
@@ -1408,7 +1406,7 @@ const getCashboxTransactions = async (req, res) => {
 const getCashboxTransactionById = async (req, res) => {
   try {
     const transaction = await db.getTransactionById(req.params.id);
-    res.status(200).json([{ success: true, data: transaction }]);
+    res.status(200).json([{ transaction }]);
   } catch (error) {
     console.error(
       `Error fetching cashbox transaction by ID ${req.params.id}:`,
@@ -1474,7 +1472,7 @@ const getCashboxReportByPeriod = async (req, res) => {
     }
 
     const report = await db.getCashboxReport(start_date, end_date, period);
-    res.status(200).json([{ success: true, data: report }]);
+    res.status(200).json([{ report }]);
   } catch (error) {
     console.error("Error fetching cashbox report:", error.message);
     res
@@ -1498,7 +1496,7 @@ const getCashboxReportByDateRange = async (req, res) => {
       end_date + " 23:59:59",
       "daily"
     );
-    res.status(200).json([{ success: true, data: report }]);
+    res.status(200).json([{ report }]);
   } catch (error) {
     console.error("Error fetching cashbox range report:", error.message);
     res
