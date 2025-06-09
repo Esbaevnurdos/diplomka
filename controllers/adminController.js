@@ -247,7 +247,7 @@ const addPermission = async (req, res) => {
 const getAllPermissions = async (req, res) => {
   try {
     const permissions = await db.getAllPermissions();
-    res.status(200).json({ success: true, data: permissions });
+    res.status(200).json({data: permissions });
   } catch (error) {
     console.error("Error fetching permissions:", error.message);
     res
