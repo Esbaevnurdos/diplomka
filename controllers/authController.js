@@ -95,6 +95,50 @@ const verifyAndSetPassword = async (req, res) => {
   }
 };
 
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await db.findUserByEmailAndOTP(email, otp);
+
+    if (!user.rows.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during OTP verification",
+    });
+  }
+};
+
+const setPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.updateUserPassword(email, hashedPassword);
+
+    res.status(200).json({
+      success: true,
+      message: "Password set successfully",
+    });
+  } catch (error) {
+    console.error("Error setting password:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error while setting password" });
+  }
+};
+
 const loginUser = async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
@@ -157,4 +201,6 @@ module.exports = {
   verifyAndSetPassword,
   loginUser,
   logoutUser,
+  setPassword,
+  verifyOTP,
 };

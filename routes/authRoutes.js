@@ -9,6 +9,10 @@ router.post("/set-password", authController.verifyAndSetPassword);
 router.post("/login", authController.loginUser);
 router.post("/logout", authController.logoutUser);
 router.get("/captcha", captchaController.generateCaptcha);
+router.post("/verify-otp", authController.verifyOTP);
+
+// POST /api/auth/set-password
+router.post("/set-password", authController.setPassword);
 
 router.post("/captcha/verify", captchaController.verifyCaptcha);
 
