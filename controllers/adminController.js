@@ -1496,7 +1496,7 @@ const getCashboxReportByDateRange = async (req, res) => {
       end_date + " 23:59:59",
       "daily"
     );
-    res.status(200).json([{ report }]);
+    res.status(200).json([{ data: report }]);
   } catch (error) {
     console.error("Error fetching cashbox range report:", error.message);
     res
