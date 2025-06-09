@@ -611,12 +611,11 @@ const addPatient = async (
   service,
   paymentType,
   appointmentDateTime,
-  specialist,
   comment
 ) => {
   const query = `
-    INSERT INTO patients (name, service, payment_type, appointment_date_time, specialist, comment)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO patients (name, service, payment_type, appointment_date_time, comment)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING *;
   `;
   try {
@@ -625,7 +624,6 @@ const addPatient = async (
       service,
       paymentType,
       appointmentDateTime,
-      specialist,
       comment,
     ]);
     return result.rows[0];
@@ -665,13 +663,12 @@ const updatePatient = async (
   service,
   paymentType,
   appointmentDateTime,
-  specialist,
   comment
 ) => {
   const query = `
     UPDATE patients 
-    SET service = $1, payment_type = $2, appointment_date_time = $3, specialist = $4, comment = $5
-    WHERE id = $6
+    SET service = $1, payment_type = $2, appointment_date_time = $3, comment = $4
+    WHERE id = $5
     RETURNING *;
   `;
   try {
@@ -679,7 +676,6 @@ const updatePatient = async (
       service,
       paymentType,
       appointmentDateTime,
-      specialist,
       comment,
       id,
     ]);

@@ -535,7 +535,6 @@ const addPatient = async (req, res) => {
     service,
     paymentType = "Карта",
     appointmentDateTime,
-    specialist,
     comment,
   } = req.body;
 
@@ -545,15 +544,12 @@ const addPatient = async (req, res) => {
       service,
       paymentType,
       appointmentDateTime,
-      specialist,
       comment
     );
-    res.status(201).json([
-      {
-        success: true,
-        data: [patient],
-      },
-    ]);
+    res.status(201).json({
+      success: true,
+      data: [patient],
+    });
   } catch (error) {
     console.error("Error adding patient:", error.message);
     res.status(500).json({ success: false, message: "Failed to add patient" });
@@ -599,9 +595,8 @@ const getPatientById = async (req, res) => {
 };
 
 const updatePatient = async (req, res) => {
-  const { id } = req.params; // changed from name to id
-  const { service, paymentType, appointmentDateTime, specialist, comment } =
-    req.body;
+  const { id } = req.params;
+  const { service, paymentType, appointmentDateTime, comment } = req.body;
 
   try {
     const updatedPatient = await db.updatePatient(
@@ -609,16 +604,13 @@ const updatePatient = async (req, res) => {
       service,
       paymentType,
       appointmentDateTime,
-      specialist,
       comment
     );
 
-    res.status(200).json([
-      {
-        success: true,
-        data: [updatedPatient],
-      },
-    ]);
+    res.status(200).json({
+      success: true,
+      data: [updatedPatient],
+    });
   } catch (error) {
     console.error("Error updating patient by id:", error.message);
     if (error.message === "Patient not found") {
