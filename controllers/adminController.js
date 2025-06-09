@@ -155,7 +155,7 @@ const getRolesController = async (req, res) => {
     res.status(200).json(roles); // Already an array from DB
   } catch (error) {
     console.error("Error fetching roles:", error.message);
-    res.status(500).json({ error: "Failed to fetch roles" });
+    res.status(500).json([{ error: "Failed to fetch roles" }]);
   }
 };
 
@@ -193,10 +193,12 @@ const deleteRoleController = async (req, res) => {
 
   try {
     const deletedCount = await db.deleteRole(ids);
-    res.json({
-      success: true,
-      message: `${deletedCount} role(s) deleted successfully`,
-    });
+    res.status(200).json([
+      {
+        success: true,
+        message: `${deletedCount} role(s) deleted successfully`,
+      },
+    ]);
   } catch (error) {
     console.error("Error deleting roles:", error.message);
     res.status(500).json({ error: "Server error while deleting roles" });
@@ -464,7 +466,12 @@ const getSpecialistById = async (req, res) => {
 const getAllSpecialists = async (req, res) => {
   try {
     const specialists = await db.getAllSpecialists();
-    res.status(200).json({ success: true, data: specialists });
+    res.status(200).json([
+      {
+        success: true,
+        data: specialists,
+      },
+    ]);
   } catch (error) {
     console.error("Error fetching specialists:", error.message);
     res
@@ -515,11 +522,12 @@ const deleteSpecialist = async (req, res) => {
 
   try {
     const deletedCount = await db.deleteSpecialist(ids);
-    res
-      .status(200)
-      .json([
-        { message: `${deletedCount} specialist(s) deleted successfully` },
-      ]);
+    res.status(200).json([
+      {
+        success: true,
+        message: `${deletedCount} specialist(s) deleted successfully`,
+      },
+    ]);
   } catch (error) {
     console.error("Error deleting specialists:", error.message);
     res.status(500).json([{ error: "Failed to delete specialists" }]);
