@@ -247,7 +247,7 @@ const addPermission = async (req, res) => {
 const getAllPermissions = async (req, res) => {
   try {
     const permissions = await db.getAllPermissions();
-    res.status(200).json({data: permissions });
+    res.status(200).json(permissions); // <-- just send the array directly
   } catch (error) {
     console.error("Error fetching permissions:", error.message);
     res
