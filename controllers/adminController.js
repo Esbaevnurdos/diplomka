@@ -532,6 +532,8 @@ const deleteSpecialist = async (req, res) => {
 const addPatient = async (req, res) => {
   const {
     name,
+    iin,
+    phone,
     service,
     paymentType = "Карта",
     appointmentDateTime,
@@ -541,6 +543,8 @@ const addPatient = async (req, res) => {
   try {
     const patient = await db.addPatient(
       name,
+      iin,
+      phone,
       service,
       paymentType,
       appointmentDateTime,

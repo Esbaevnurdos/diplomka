@@ -608,19 +608,23 @@ const deleteSpecialist = async (ids) => {
 
 const addPatient = async (
   name,
+  iin,
+  phone,
   service,
   paymentType,
   appointmentDateTime,
   comment
 ) => {
   const query = `
-    INSERT INTO patients (name, service, payment_type, appointment_date_time, comment)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO patients (name, iin, phone, service, payment_type, appointment_date_time, comment)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *;
   `;
   try {
     const result = await db.query(query, [
       name,
+      iin,
+      phone,
       service,
       paymentType,
       appointmentDateTime,
