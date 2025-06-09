@@ -466,12 +466,7 @@ const getSpecialistById = async (req, res) => {
 const getAllSpecialists = async (req, res) => {
   try {
     const specialists = await db.getAllSpecialists();
-    res.status(200).json([
-      {
-        success: true,
-        data: specialists,
-      },
-    ]);
+    res.status(200).json([{ specialists }]);
   } catch (error) {
     console.error("Error fetching specialists:", error.message);
     res
@@ -568,12 +563,7 @@ const addPatient = async (req, res) => {
 const getAllPatients = async (req, res) => {
   try {
     const patients = await db.getAllPatients();
-    res.status(200).json([
-      {
-        success: true,
-        data: patients,
-      },
-    ]);
+    res.status(200).json([{ patients }]);
   } catch (error) {
     console.error("Error fetching patients:", error.message);
     res
@@ -706,12 +696,7 @@ const addAppointment = async (req, res) => {
 const getAllAppointments = async (req, res) => {
   try {
     const appointments = await db.getAllAppointments();
-    res.status(200).json([
-      {
-        success: true,
-        data: appointments,
-      },
-    ]);
+    res.status(200).json([{ appointments }]);
   } catch (error) {
     console.error("Error fetching appointments:", error.message);
     res
@@ -811,12 +796,7 @@ const deleteAppointment = async (req, res) => {
 const getAllReportAppointments = async (req, res) => {
   try {
     const appointments = await db.getAllAppointments();
-    res.status(200).json([
-      {
-        success: true,
-        data: appointments,
-      },
-    ]);
+    res.status(200).json([{ appointments }]);
   } catch (error) {
     console.error("Error in getAllAppointments:", error.message);
     res.status(500).json([
@@ -845,12 +825,7 @@ const getAppointmentsReportByDateRange = async (req, res) => {
       start_date,
       end_date
     );
-    res.status(200).json([
-      {
-        success: true,
-        data: report,
-      },
-    ]);
+    res.status(200).json([{ report }]);
   } catch (error) {
     console.error("Error in getAppointmentsReportByDateRange:", error.message);
     res.status(500).json([
@@ -877,12 +852,7 @@ const getAppointmentsReportByPeriod = async (req, res) => {
 
   try {
     const report = await db.getAppointmentsReportByPeriod(period.toLowerCase());
-    res.status(200).json([
-      {
-        success: true,
-        data: report,
-      },
-    ]);
+    res.status(200).json([{ report }]);
   } catch (error) {
     console.error("Error in getAppointmentsReportByPeriod:", error.message);
     res.status(500).json([
@@ -976,7 +946,7 @@ const deleteService = async (req, res) => {
 const getAllServices = async (_req, res) => {
   try {
     const services = await db.getAllServices();
-    res.status(200).json([{ success: true, data: services }]);
+    res.status(200).json([{ services }]);
   } catch (error) {
     console.error("Error fetching services:", error.message);
     res.status(500).json({ success: false, message: "Failed to get services" });
@@ -998,7 +968,7 @@ const addExpense = async (req, res) => {
 const getExpenses = async (_req, res) => {
   try {
     const expenses = await db.getExpenses();
-    res.status(200).json([{ success: true, data: expenses }]);
+    res.status(200).json([{ expenses }]);
   } catch (error) {
     console.error("Error fetching expenses:", error.message);
     res.status(500).json([{ error: "Failed to get expenses" }]);
