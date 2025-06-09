@@ -232,7 +232,7 @@ const addPermission = async (req, res) => {
 
   try {
     const permission = await db.addPermission(name, description, code);
-    res.status(201).json({ success: true, data: permission });
+    res.status(201).json({ success: true, data: [permission] });
   } catch (error) {
     console.error("Error adding permission:", error.message);
     res
