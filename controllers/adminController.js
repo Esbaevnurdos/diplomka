@@ -553,7 +553,12 @@ const addPatient = async (req, res) => {
       specialist,
       comment
     );
-    res.status(201).json({ success: true, data: patient });
+    res.status(201).json([
+      {
+        success: true,
+        data: [patient],
+      },
+    ]);
   } catch (error) {
     console.error("Error adding patient:", error.message);
     res.status(500).json({ success: false, message: "Failed to add patient" });
@@ -563,7 +568,12 @@ const addPatient = async (req, res) => {
 const getAllPatients = async (req, res) => {
   try {
     const patients = await db.getAllPatients();
-    res.status(200).json({ success: true, data: patients });
+    res.status(200).json([
+      {
+        success: true,
+        data: patients,
+      },
+    ]);
   } catch (error) {
     console.error("Error fetching patients:", error.message);
     res
@@ -584,7 +594,12 @@ const getPatientById = async (req, res) => {
         .json({ success: false, message: "Patient not found" });
     }
 
-    res.status(200).json({ success: true, data: patient });
+    res.status(200).json([
+      {
+        success: true,
+        data: [patient],
+      },
+    ]);
   } catch (error) {
     console.error("Error fetching patient by id:", error.message);
     res
@@ -608,7 +623,12 @@ const updatePatient = async (req, res) => {
       comment
     );
 
-    res.status(200).json({ success: true, data: updatedPatient });
+    res.status(200).json([
+      {
+        success: true,
+        data: [updatedPatient],
+      },
+    ]);
   } catch (error) {
     console.error("Error updating patient by id:", error.message);
     if (error.message === "Patient not found") {
@@ -633,10 +653,12 @@ const deletePatient = async (req, res) => {
 
   try {
     await db.deletePatient(ids);
-    res.status(200).json({
-      success: true,
-      message: `Deleted ${ids.length} patient(s) successfully`,
-    });
+    res.status(200).json([
+      {
+        success: true,
+        message: `Deleted ${ids.length} patient(s) successfully`,
+      },
+    ]);
   } catch (error) {
     console.error("Error deleting patients:", error.message);
     res.status(500).json({
@@ -667,7 +689,12 @@ const addAppointment = async (req, res) => {
       status,
       paymentType // Pass it to DB function
     );
-    res.status(201).json({ success: true, data: appointment });
+    res.status(201).json([
+      {
+        success: true,
+        data: [appointment],
+      },
+    ]);
   } catch (error) {
     console.error("Error adding appointment:", error.message);
     res
@@ -679,7 +706,12 @@ const addAppointment = async (req, res) => {
 const getAllAppointments = async (req, res) => {
   try {
     const appointments = await db.getAllAppointments();
-    res.status(200).json({ success: true, data: appointments });
+    res.status(200).json([
+      {
+        success: true,
+        data: appointments,
+      },
+    ]);
   } catch (error) {
     console.error("Error fetching appointments:", error.message);
     res
@@ -700,7 +732,12 @@ const getAppointmentById = async (req, res) => {
         .json({ success: false, message: "Appointment not found" });
     }
 
-    res.status(200).json({ success: true, data: appointment });
+    res.status(200).json([
+      {
+        success: true,
+        data: [appointment],
+      },
+    ]);
   } catch (error) {
     console.error("Error fetching appointment:", error.message);
     res
@@ -724,7 +761,12 @@ const updateAppointment = async (req, res) => {
       status
     );
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json([
+      {
+        success: true,
+        data: [updated],
+      },
+    ]);
   } catch (error) {
     console.error("Error updating appointment:", error.message);
 
@@ -752,9 +794,12 @@ const deleteAppointment = async (req, res) => {
 
   try {
     await db.deleteAppointment(ids);
-    res
-      .status(200)
-      .json({ success: true, message: "Appointments deleted successfully" });
+    res.status(200).json([
+      {
+        success: true,
+        message: "Appointments deleted successfully",
+      },
+    ]);
   } catch (error) {
     console.error("Error deleting appointments:", error.message);
     res
@@ -766,12 +811,20 @@ const deleteAppointment = async (req, res) => {
 const getAllReportAppointments = async (req, res) => {
   try {
     const appointments = await db.getAllAppointments();
-    res.status(200).json({ success: true, data: appointments });
+    res.status(200).json([
+      {
+        success: true,
+        data: appointments,
+      },
+    ]);
   } catch (error) {
     console.error("Error in getAllAppointments:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch appointments" });
+    res.status(500).json([
+      {
+        success: false,
+        message: "Failed to fetch appointments",
+      },
+    ]);
   }
 };
 
@@ -779,10 +832,12 @@ const getAppointmentsReportByDateRange = async (req, res) => {
   const { start_date, end_date } = req.query;
 
   if (!start_date || !end_date) {
-    return res.status(400).json({
-      success: false,
-      message: "start_date and end_date query parameters are required",
-    });
+    return res.status(400).json([
+      {
+        success: false,
+        message: "start_date and end_date query parameters are required",
+      },
+    ]);
   }
 
   try {
@@ -790,10 +845,20 @@ const getAppointmentsReportByDateRange = async (req, res) => {
       start_date,
       end_date
     );
-    res.status(200).json({ success: true, data: report });
+    res.status(200).json([
+      {
+        success: true,
+        data: report,
+      },
+    ]);
   } catch (error) {
     console.error("Error in getAppointmentsReportByDateRange:", error.message);
-    res.status(500).json({ success: false, message: "Failed to fetch report" });
+    res.status(500).json([
+      {
+        success: false,
+        message: "Failed to fetch report",
+      },
+    ]);
   }
 };
 
@@ -802,18 +867,30 @@ const getAppointmentsReportByPeriod = async (req, res) => {
 
   const validPeriods = ["daily", "weekly", "monthly", "yearly"];
   if (!validPeriods.includes(period.toLowerCase())) {
-    return res.status(400).json({
-      success: false,
-      message: `Invalid period. Must be one of ${validPeriods.join(", ")}`,
-    });
+    return res.status(400).json([
+      {
+        success: false,
+        message: `Invalid period. Must be one of ${validPeriods.join(", ")}`,
+      },
+    ]);
   }
 
   try {
     const report = await db.getAppointmentsReportByPeriod(period.toLowerCase());
-    res.status(200).json({ success: true, data: report });
+    res.status(200).json([
+      {
+        success: true,
+        data: report,
+      },
+    ]);
   } catch (error) {
     console.error("Error in getAppointmentsReportByPeriod:", error.message);
-    res.status(500).json({ success: false, message: "Failed to fetch report" });
+    res.status(500).json([
+      {
+        success: false,
+        message: "Failed to fetch report",
+      },
+    ]);
   }
 };
 
@@ -822,7 +899,7 @@ const addService = async (req, res) => {
 
   try {
     const service = await db.addService(name, description, price, isAvailable);
-    res.status(201).json({ success: true, data: service });
+    res.status(201).json([{ success: true, data: service }]);
   } catch (error) {
     console.error("Error adding service:", error.message);
     res.status(500).json({ success: false, message: "Failed to add service" });
@@ -841,7 +918,7 @@ const updateService = async (req, res) => {
       price,
       isAvailable
     );
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json([{ success: true, data: updated }]);
   } catch (error) {
     console.error("Error updating service:", error.message);
     if (error.message === "Service not found") {
@@ -865,7 +942,7 @@ const getServiceById = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Service not found" });
     }
-    res.status(200).json({ success: true, data: service });
+    res.status(200).json([{ success: true, data: service }]);
   } catch (error) {
     console.error("Error fetching service:", error.message);
     res.status(500).json({ success: false, message: "Failed to get service" });
@@ -884,10 +961,9 @@ const deleteService = async (req, res) => {
 
   try {
     await db.deleteService(names);
-    res.status(200).json({
-      success: true,
-      message: "Services deleted successfully",
-    });
+    res
+      .status(200)
+      .json([{ success: true, message: "Services deleted successfully" }]);
   } catch (error) {
     console.error("Error deleting services:", error.message);
     res.status(500).json({
@@ -900,7 +976,7 @@ const deleteService = async (req, res) => {
 const getAllServices = async (_req, res) => {
   try {
     const services = await db.getAllServices();
-    res.status(200).json({ success: true, data: services });
+    res.status(200).json([{ success: true, data: services }]);
   } catch (error) {
     console.error("Error fetching services:", error.message);
     res.status(500).json({ success: false, message: "Failed to get services" });
@@ -922,7 +998,7 @@ const addExpense = async (req, res) => {
 const getExpenses = async (_req, res) => {
   try {
     const expenses = await db.getExpenses();
-    res.status(200).json(expenses); // Already an array
+    res.status(200).json([{ success: true, data: expenses }]);
   } catch (error) {
     console.error("Error fetching expenses:", error.message);
     res.status(500).json([{ error: "Failed to get expenses" }]);
@@ -974,7 +1050,9 @@ const deleteExpense = async (req, res) => {
     if (deletedExpenses.length === 0) {
       return res.status(404).json([{ error: "No expenses found to delete." }]);
     }
-    res.status(200).json({ message: "Expenses deleted", deletedExpenses });
+    res
+      .status(200)
+      .json([{ success: true, message: "Expenses deleted", deletedExpenses }]);
   } catch (error) {
     console.error("Error deleting expenses:", error.message);
     res.status(500).json([{ error: "Failed to delete expenses" }]);
@@ -996,7 +1074,7 @@ const addExpenseCategory = async (req, res) => {
 const getExpenseCategories = async (_req, res) => {
   try {
     const categories = await db.getExpenseCategories();
-    res.status(200).json({ success: true, data: categories });
+    res.status(200).json([{ success: true, data: categories }]); // wrapped in array
   } catch (error) {
     console.error("Error getting expense categories:", error.message);
     res.status(500).json({
@@ -1056,7 +1134,7 @@ const deleteExpenseCategory = async (req, res) => {
 const getOrganizationSettings = async (req, res) => {
   try {
     const settings = await db.getOrganizationSettings();
-    res.status(200).json({ success: true, data: settings });
+    res.status(200).json([{ success: true, data: settings }]);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -1071,10 +1149,13 @@ const updateOrganization = async (req, res) => {
 
   try {
     const updated = await db.updateOrganization(id, req.body);
-    res.status(200).json({
-      message: "Organization updated successfully",
-      data: updated,
-    });
+    res.status(200).json([
+      {
+        success: true,
+        message: "Organization updated successfully",
+        data: updated,
+      },
+    ]);
   } catch (err) {
     console.error("Update org error:", err.message);
     res.status(500).json({ error: err.message });
@@ -1120,11 +1201,14 @@ const updateOrganizationLogo = async (req, res) => {
       return res.status(404).json({ error: "Organization not found" });
     }
 
-    res.status(200).json({
-      message: "Organization logo updated successfully",
-      logo: logoUrl,
-      data: result.rows[0],
-    });
+    res.status(200).json([
+      {
+        success: true,
+        message: "Organization logo updated successfully",
+        logo: logoUrl,
+        data: result.rows[0],
+      },
+    ]);
   } catch (err) {
     console.error("Logo upload error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to upload logo" });
@@ -1240,7 +1324,7 @@ const getExpenseReportByPeriod = async (req, res) => {
       totalExpenses: parseFloat(row.total_expenses),
       categoriesSummary: row.categories_summary,
     }));
-    res.status(200).json({ success: true, data });
+    res.status(200).json([{ success: true, data }]);
   } catch (error) {
     console.error("❌ Report generation failed:", error);
     res.status(500).json({
@@ -1293,7 +1377,7 @@ const getExpenseReportByDateRange = async (req, res) => {
       categoriesSummary: obj.categoriesSummary,
     }));
 
-    res.status(200).json({ success: true, data });
+    res.status(200).json([{ success: true, data }]);
   } catch (error) {
     console.error("❌ Date range report generation failed:", error);
     res.status(500).json({
@@ -1328,7 +1412,9 @@ const createCashboxTransaction = async (req, res) => {
       service_names,
     });
 
-    res.status(201).json({ success: true, transaction_name: transactionName });
+    res
+      .status(201)
+      .json([{ success: true, transaction_name: transactionName }]);
   } catch (error) {
     console.error("Error creating cashbox transaction:", error.message);
     res
@@ -1340,7 +1426,7 @@ const createCashboxTransaction = async (req, res) => {
 const getCashboxTransactions = async (req, res) => {
   try {
     const transactions = await db.getTransactions();
-    res.status(200).json({ success: true, data: transactions });
+    res.status(200).json([{ success: true, data: transactions }]);
   } catch (error) {
     console.error("Error fetching cashbox transactions:", error.message);
     res
@@ -1352,7 +1438,7 @@ const getCashboxTransactions = async (req, res) => {
 const getCashboxTransactionById = async (req, res) => {
   try {
     const transaction = await db.getTransactionById(req.params.id);
-    res.status(200).json({ success: true, data: transaction });
+    res.status(200).json([{ success: true, data: transaction }]);
   } catch (error) {
     console.error(
       `Error fetching cashbox transaction by ID ${req.params.id}:`,
@@ -1367,7 +1453,7 @@ const getCashboxTransactionById = async (req, res) => {
 const updateCashboxTransaction = async (req, res) => {
   try {
     await db.updateTransaction({ id: req.params.id, ...req.body });
-    res.status(200).json({ success: true });
+    res.status(200).json([{ success: true }]);
   } catch (error) {
     console.error(
       `Error updating cashbox transaction ${req.params.id}:`,
@@ -1383,7 +1469,7 @@ const deleteCashboxTransactionById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.deleteTransaction([id]);
-    res.status(200).json({ success: true });
+    res.status(200).json([{ success: true }]);
   } catch (error) {
     console.error("Error deleting transaction:", error.message);
     res
@@ -1418,7 +1504,7 @@ const getCashboxReportByPeriod = async (req, res) => {
     }
 
     const report = await db.getCashboxReport(start_date, end_date, period);
-    res.status(200).json({ success: true, data: report });
+    res.status(200).json([{ success: true, data: report }]);
   } catch (error) {
     console.error("Error fetching cashbox report:", error.message);
     res
@@ -1442,7 +1528,7 @@ const getCashboxReportByDateRange = async (req, res) => {
       end_date + " 23:59:59",
       "daily"
     );
-    res.status(200).json({ success: true, data: report });
+    res.status(200).json([{ success: true, data: report }]);
   } catch (error) {
     console.error("Error fetching cashbox range report:", error.message);
     res
