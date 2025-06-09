@@ -260,12 +260,10 @@ const getPermissionById = async (req, res) => {
     const permission = await db.getPermissionById(id);
 
     if (!permission) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Permission not found" });
+      return res.status(404).json([{ error: "Permission not found" }]);
     }
 
-    res.status(200).json({ success: true, data: permission });
+    res.status(200).json({ success: true, data: [permission] });
   } catch (error) {
     console.error("Error fetching permission by ID:", error.message);
     res
@@ -286,9 +284,9 @@ const updatePermission = async (req, res) => {
       code
     );
 
-    res.status(200).json({ success: true, data: updatedPermission });
+    res.status(200).json({ success: true, data: [updatedPermission] });
   } catch (error) {
-    console.error("Error updating permission:", error.message);
+    res.status(404).json([{ error: "Permission not found" }]);
 
     if (error.message === "Permission not found") {
       return res
@@ -306,7 +304,7 @@ const deletePermission = async (req, res) => {
   let { ids } = req.body;
 
   if (!ids) {
-    return res.status(400).json({ error: "No permission IDs provided" });
+    return res.status(400).json([{ error: "No permission IDs provided" }]);
   }
 
   if (!Array.isArray(ids)) {
@@ -315,15 +313,15 @@ const deletePermission = async (req, res) => {
 
   try {
     const deletedCount = await db.deletePermission(ids);
-    res.status(200).json({
-      success: true,
-      message: `${deletedCount} permission(s) deleted successfully`,
-    });
+    res.status(200).json([
+      {
+        success: true,
+        message: `${deletedCount} permission(s) deleted successfully`,
+      },
+    ]);
   } catch (error) {
     console.error("Error deleting permissions:", error.message);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to delete permissions" });
+    res.status(500).json([{ error: "Failed to delete permissions" }]);
   }
 };
 
